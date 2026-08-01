@@ -1,38 +1,114 @@
-import React from 'react'
-import Login from './Login'
-import { ToastContainer } from 'react-toastify'
-import Home from './Home'
+import React from "react";
+import Login from "./Login";
+import Home from "./Home";
+import Admin from "./Admin";
+import CSHRequest from "./CSHRequest";
+import { useAutoDarkDetect } from "./misc";
+import { ToastContainer } from "react-toastify";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+  Navigate,
+  Outlet,
+} from "react-router";
 
-
-export const backendUrl = "http://localhost:4000"
-
+export const backendUrl = "http://localhost:4000";
 
 const App = () => {
-  const [token, setToken] = React.useState(localStorage.getItem('token') || "")
+  const isDark = useAutoDarkDetect();
+  const [token, setToken] = React.useState(localStorage.getItem("token") || "");
+  const [adtoken, setAdToken] = React.useState(
+    localStorage.getItem("adtoken") || "",
+  );
+  const [trtoken, setTrToken] = React.useState(
+    localStorage.getItem("trtoken") || "",
+  );
 
   React.useEffect(() => {
-    localStorage.setItem('token', token)
-  }, [token])
+  localStorage.setItem('token', token)
+  localStorage.setItem('adtoken', adtoken)
+  localStorage.setItem('trtoken', trtoken)
+
+  if(token === ""){
+    localStorage.removeItem('token')
+  }
+  
+  if(adtoken === ""){
+    localStorage.removeItem('adtoken')
+  }
+
+  if(trtoken === ""){
+    localStorage.removeItem('trtoken')
+  }
+
+  },[token, adtoken, trtoken] ) 
+
+
+  const ProtectedLink = () => {
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
+    return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
+  };
+
+  const VeryProtectedLink = () => {
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
+    if (!adtoken) {
+      return <Navigate to="/" replace />;
+    }
+    return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
+  };
+
+  const PublicLink = () => {
+    if (token) {
+      return <Navigate to="/" replace />;
+    }
+    return <Outlet />;
+  };
+
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route>
+        <Route element={<PublicLink />}>
+          <Route
+            path="/login"
+            element={
+              <Login
+                setToken={setToken}
+                setAdToken={setAdToken}
+                setTrToken={setTrToken}
+              />
+            }
+          />
+        </Route>
+
+        <Route element={<ProtectedLink />}>
+          <Route path="/" element={<Home setToken={setToken} />} />
+          <Route path="/requests" element={<CSHRequest setToken={setToken}/>} />
+        </Route>
+
+        <Route element={<VeryProtectedLink />}>
+          <Route path="/admin" element={<Admin setToken={setToken} setAdToken={setAdToken } />} />
+        </Route>
+
+        <Route
+          path="*"
+          element={<Navigate to={token ? "/" : "/login"} replace />}
+        />
+      </Route>,
+    ),
+  );
 
   return (
     <div>
-      <ToastContainer />
-        {
-          token === "" ? (
-            <Login setToken={setToken} />
-          ) : (
-            <div>
-            <Home setToken={setToken}/>
-            <button onClick={() => setToken("")} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" >
-            Logout
-            </button>
-       
-            </div>
-          )
-        }
+      <ToastContainer theme={isDark ? "dark" : "light"} />
+      <RouterProvider router={router} />
     </div>
-   
-  )
-}
+  );
+};
 
-export default App
+export default App;
