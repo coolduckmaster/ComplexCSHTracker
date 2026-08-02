@@ -2,8 +2,8 @@ import React from 'react'
 
 const CSHPanel = () => {
   return (
-    <div>
-      
+    <div className='dark:text-white'>
+      <p>Approving</p>
     </div>
   )
 }

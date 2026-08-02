@@ -43,7 +43,7 @@ const Onboarding = ({ SetOnboard }) => {
 
   return (
     <div
-      className={`flex items-center justify-center min-h-screen bg-gray-100 dark:bg-black dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+      className={` fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-gray-100 dark:bg-black dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
     >
       <ToastContainer theme="dark" />
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -67,8 +67,9 @@ const Onboarding = ({ SetOnboard }) => {
               <select
                 value={campus}
                 onChange={(e) => setCampus(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
               >
+                <option hidden >Campus:</option>
                 <option value="Campus A">Campus A</option>
                 <option value="Campus B">Campus B</option>
                 <option value="N/A Campus">N/A</option>
@@ -79,6 +80,7 @@ const Onboarding = ({ SetOnboard }) => {
                 onChange={(e) => setGrade(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
               >
+                <option hidden >Grade:</option>
                 <option value="Grade 9">Grade 9</option>
                 <option value="Grade 10">Grade 10</option>
                 <option value="Grade 11">Grade 11</option>

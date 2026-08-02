@@ -3,7 +3,9 @@ import Login from "./Login";
 import Home from "./Home";
 import Admin from "./Admin";
 import CSHRequest from "./CSHRequest";
+import CSHPanel from "./CSHPanel";
 import { useAutoDarkDetect } from "./misc";
+import DashboardSide from "./DashboardSide";
 import { ToastContainer } from "react-toastify";
 import {
   createBrowserRouter,
@@ -18,6 +20,7 @@ export const backendUrl = "http://localhost:4000";
 
 const App = () => {
   const isDark = useAutoDarkDetect();
+  const [completeOnBoard, setCompleteOnBoard] = React.useState(localStorage.getItem("CompleteOnboard") || "")
   const [token, setToken] = React.useState(localStorage.getItem("token") || "");
   const [adtoken, setAdToken] = React.useState(
     localStorage.getItem("adtoken") || "",
@@ -27,24 +30,22 @@ const App = () => {
   );
 
   React.useEffect(() => {
-  localStorage.setItem('token', token)
-  localStorage.setItem('adtoken', adtoken)
-  localStorage.setItem('trtoken', trtoken)
+    localStorage.setItem("token", token);
+    localStorage.setItem("adtoken", adtoken);
+    localStorage.setItem("trtoken", trtoken);
 
-  if(token === ""){
-    localStorage.removeItem('token')
-  }
-  
-  if(adtoken === ""){
-    localStorage.removeItem('adtoken')
-  }
+    if (token === "") {
+      localStorage.removeItem("token");
+    }
 
-  if(trtoken === ""){
-    localStorage.removeItem('trtoken')
-  }
+    if (adtoken === "") {
+      localStorage.removeItem("adtoken");
+    }
 
-  },[token, adtoken, trtoken] ) 
-
+    if (trtoken === "") {
+      localStorage.removeItem("trtoken");
+    }
+  }, [token, adtoken, trtoken]);
 
   const ProtectedLink = () => {
     if (!token) {
@@ -58,6 +59,16 @@ const App = () => {
       return <Navigate to="/login" replace />;
     }
     if (!adtoken) {
+      return <Navigate to="/" replace />;
+    }
+    return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
+  };
+
+  const TrProtectedLink = () => {
+    if (!token) {
+      return <Navigate to="/login" replace />;
+    }
+    if (!trtoken) {
       return <Navigate to="/" replace />;
     }
     return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
@@ -87,12 +98,29 @@ const App = () => {
         </Route>
 
         <Route element={<ProtectedLink />}>
-          <Route path="/" element={<Home setToken={setToken} />} />
-          <Route path="/requests" element={<CSHRequest setToken={setToken}/>} />
-        </Route>
+          <Route element={<DashboardSide />}>
+            <Route path="/" element={<Home setToken={setToken} />} />
+            <Route
+              path="/requests"
+              element={<CSHRequest setToken={setToken} />}
+            />
 
-        <Route element={<VeryProtectedLink />}>
-          <Route path="/admin" element={<Admin setToken={setToken} setAdToken={setAdToken } />} />
+            <Route element={<VeryProtectedLink />}>
+              <Route
+                path="/admin"
+                element={<Admin setToken={setToken} setAdToken={setAdToken} />}
+              />
+            </Route>
+
+            <Route element={<TrProtectedLink />}>
+              <Route
+                path="/approval"
+                element={
+                  <CSHPanel setToken={setToken} setTrToken={setTrToken} />
+                }
+              />
+            </Route>
+          </Route>
         </Route>
 
         <Route

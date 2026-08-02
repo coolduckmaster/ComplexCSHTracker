@@ -5,102 +5,120 @@ import { backendUrl } from "./App";
 import Dashboard from "./Dashboard";
 
 const Home = ({ setToken }) => {
-const [isFaded, setIsFaded] = React.useState(false);
-const [showNext, setShowNext] = React.useState(
-    sessionStorage.getItem("seenwelcome" || false)
-);
-const [completeOnboard, setCompleteOnboard] = React.useState(false);
-const [isLoading, setIsLoading] = React.useState(true);
-const storedName = localStorage.getItem("userName") || "User";
+  const [isFaded, setIsFaded] = React.useState(false);
+  const [isFadingOut, setIsFadingOut] = React.useState(false);
+  const [showNext, setShowNext] = React.useState(
+    sessionStorage.getItem("seenwelcome") === "true",
+  );
 
-React.useEffect(() => {
+  const [completeOnboard, setCompleteOnboard] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const storedName = localStorage.getItem("userName") || "User";
+
+  React.useEffect(() => {
     const userId = localStorage.getItem("userId");
     const localstatus = localStorage.getItem("CompleteOnboard");
 
     if (localstatus === "true") {
-    setCompleteOnboard(true);
-    setIsLoading(false);
-    return;
+      setCompleteOnboard(true);
+      setIsLoading(false);
+      return;
     }
 
     const checkonboard = async () => {
-    try {
+      try {
         const response = await axios.post(backendUrl + "/api/user/onboarding", {
-        userId,
+          userId,
         });
         if (
-        response.data.completeOnboard === "true" ||
-        response.data.message === "User has already completed."
+          response.data.completeOnboard === "true" ||
+          response.data.message === "User has already completed."
         ) {
-        setCompleteOnboard(true);
-        localStorage.setItem("CompleteOnboard", true);
-        setIsLoading(false);
+          setCompleteOnboard(true);
+          localStorage.setItem("CompleteOnboard", true);
+          setIsLoading(false);
         }
         return;
-    } catch (error) {
+      } catch (error) {
         console.log(error);
-    } finally {
+      } finally {
         setIsLoading(false);
-    }
+      }
     };
     checkonboard();
-}, []);
+  }, []);
 
-if (isLoading) {
+  if (isLoading) {
     return (
-    <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
+      <div className="fixed inset-0 z-50 flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
         <p className="animate-pulse">Loading infomation...</p>
-    </div>
+      </div>
     );
-}
+  }
 
-const handleClick = () => {
+  const handleClick = () => {
     if (isFaded) return;
     setIsFaded(true);
     setTimeout(() => {
-    setShowNext(true);
-    sessionStorage.setItem("seenwelcome", true)
+      setShowNext(true);
+      sessionStorage.setItem("seenwelcome", true);
+      setIsFaded(false);
     }, 1000);
-};
+  };
 
-if (completeOnboard === true) {
+  const handleOnboardCompleted = () => {
+    setIsFadingOut(true);
+    setTimeout(() => {
+      setCompleteOnboard(true);
+      localStorage.setItem("CompleteOnboard", true);
+      setIsFadingOut(false);
+    }, 1000);
+  };
+
+  if (completeOnboard === true) {
     if (!showNext) {
-    return (
+      return (
         <div className="bg-white dark:bg-black">
-        <div
+          <div
             onClick={handleClick}
-            className={`flex justify-center items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none
-            transition-opacity duration-1000 ease-in-out
-            ${isFaded ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
+            className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none transition-opacity duration-1000 ease-in-out ${
+              isFaded ? "opacity-0 pointer-events-none" : "opacity-100"
+            }`}
+          >
             <p className="font-mono text-3xl"> Welcome back {storedName} </p>
+          </div>
         </div>
-        </div>
-    );
+      );
     }
 
     return <Dashboard setToken={setToken} />;
-}
+  }
 
-return (
+  return (
     <div className="bg-white dark:bg-black">
-    {showNext === false && completeOnboard === false ? (
-        <div
-        onClick={handleClick}
-        className={`flex justify-center items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none
-            transition-opacity duration-1000 ease-in-out
-            ${isFaded ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        >
-        <p className="font-mono text-3xl"> Welcome {storedName} </p>
+      {showNext === false ? (
+        <div className="fixed inset-0 z-50 bg-gray-100 dark:bg-black">
+          <div
+            onClick={handleClick}
+            className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none transition-opacity duration-1000 ease-in-out ${
+              isFaded ? "opacity-0 pointer-events-none" : "opacity-100"
+            }`}
+          >
+            <p className="font-mono text-3xl"> Welcome {storedName} </p>
+          </div>
         </div>
-    ) : (
-        <Onboarding
-        startVisible={true}
-        SetOnboard={() => setCompleteOnboard(true)}
-        />
-    )}
+      ) : (
+        <div
+          className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black transition-opacity duration-1000 ease-in-out ${isFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+        >
+          <Onboarding
+            startVisible={true}
+            SetOnboard={handleOnboardCompleted}
+          />
+        </div>
+      )}
     </div>
-);
+  );
 };
 
 export default Home;

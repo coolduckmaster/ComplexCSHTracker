@@ -138,8 +138,6 @@ const onboarding = async (req, res) => {
 
     const exists = await userModels.findOne({
       _id: { $ne: userId },
-      grade,
-      campus,
       schoolId,
     });
     if (exists) {
