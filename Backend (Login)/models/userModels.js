@@ -22,10 +22,10 @@ const userSchema = new mongoose.Schema({
   },
   schoolId: {
     type: String,
-    unique:true,
+    unique: true,
     minLength: 7,
-    maxLength: 7
-  }
+    maxLength: 7,
+  },
 });
 
 const userModels = mongoose.models.user || mongoose.model("user", userSchema);
@@ -43,11 +43,11 @@ const extraSchema = new mongoose.Schema({
     default: false,
   },
 
-  role:{
+  role: {
     type: String,
     enum: ["Student", "Teacher", "Admin"],
     default: "Student",
-  }
+  },
 });
 
 const extrasModels =
@@ -86,20 +86,35 @@ const CSHhistory = new mongoose.Schema({
   },
 });
 
-const CSHSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
-    required: true,
-    unique: true,
-  },
+const CSHSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+      unique: true,
+    },
 
-  ApprovedHours: {
-    type: Number,
-    default: 0,
-  },
+    ApprovedHours: {
+      type: Number,
+      default: 0,
+    },
 
-  history: [CSHhistory],
+    PendingHours: {
+      type: Number,
+      default: 0,
+    },
+
+    history: [CSHhistory],
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
+);
+
+CSHSchema.virtual("TotalHours").get(function () {
+  return (this.ApprovedHours || 0) + (this.PendingHours || 0);
 });
 
 const CSHModel = mongoose.models.CSH || mongoose.model("CSH", CSHSchema);

@@ -28,7 +28,7 @@ const Onboarding = ({ SetOnboard }) => {
         schoolId
       });
 
-      if (response.data.success) {
+      if (response.data.success) { 
         toast.success("Infomation has been saved successfully!");
         SetOnboard(true);
         localStorage.setItem("CompleteOnboard", true);

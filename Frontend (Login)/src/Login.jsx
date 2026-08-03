@@ -59,7 +59,7 @@ const Login = ({ setToken, setAdToken, setTrToken}) => {
             if (response.data.adtoken) {
               setAdToken(response.data.adtoken);
             } else if (response.data.trtoken) {
-              setAdToken(response.data.adtoken);
+              setTrToken(response.data.trtoken);
             }
 
             if (response.data.message) {

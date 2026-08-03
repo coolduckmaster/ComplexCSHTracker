@@ -17,8 +17,9 @@ const rolesCheck = async (req, res) => {
     const fetchrole = checkId.role;
     if (fetchrole === "Admin") {
       const adtoken = jwt.sign(
-        { userId, role: "Admin" }, 
-        process.env.JWT_SECRET, )
+        { userId, role: "Admin" },
+        process.env.JWT_SECRET,
+      );
       return res.json({
         success: true,
         message: "Adminstrative access.",
@@ -26,8 +27,9 @@ const rolesCheck = async (req, res) => {
       });
     } else if (fetchrole === "Teacher") {
       const trtoken = jwt.sign(
-        { userId, role: "Admin" }, 
-        process.env.JWT_SECRET, )
+        { userId, role: "Teacher" },
+        process.env.JWT_SECRET,
+      );
       return res.json({ success: true, message: "Teacher access.", trtoken });
     } else {
       return res.json({ success: false, message: "" });
@@ -214,4 +216,35 @@ const registerCSH = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, registerCSH, onboarding, rolesCheck };
+const checkCSH = async (req, res) => {
+  try {
+    const { userId, ApprovedHours, PendingHours } = req.body;
+
+    if (!userId) {
+      return res.json({
+        success: false,
+        message: "No user ID",
+      });
+    }
+
+    let cshData = await CSHModel.findOne({ userId });
+
+    if (!cshData) {
+      cshData = await CSHModel.create({
+        userId,
+        ApprovedHours: 0,
+        PendingHours: 0,
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: cshData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export { loginUser, registerUser, registerCSH, onboarding, rolesCheck, checkCSH };

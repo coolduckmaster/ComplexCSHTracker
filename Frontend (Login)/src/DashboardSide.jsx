@@ -40,7 +40,7 @@ const DashboardSide = () => {
     <div className="bg-gray-100 dark:bg-black">
       {logoutOpen === false ? null : (
         <div className="bits-modal-overlay fixed inset-0 z-9999 bg-darker/80 backdrop-blur-md">
-          <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border border-white/10  border-surface-300/70 bg-surface dark:bg-surface outline-none">
+          <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
             <div className="h-1 w-full bg-red-500 dark:bg-red-500"></div>
             <div className="p-4 sm:p-6">
               <div className="mb-5 flex items-start justify-between gap-4">
@@ -87,7 +87,7 @@ const DashboardSide = () => {
         className={`h-screen w-full bg-[#d1d5da] dark:bg-mist-950 dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div className="flex min-h-screen">
-          <aside className=" hidden md:flex flex-col justify-between h-screen w-60 overflow-y-auto rounded-r-2xl px-3 py-4 text-surface-content shadow-2xl dark:outline-white/14 dark:outline-1 bg-[#e1e4e8] dark:bg-[#161a22] ">
+          <aside className=" hidden md:flex flex-col justify-between h-screen w-60 overflow-y-auto rounded-r-2xl px-3 py-4 text-surface-content shadow-2xl dark:outline-white/14 dark:outline-1 outline-black/10 outline-1 bg-[#e1e4e8] dark:bg-[#161a22] ">
             <div className="space-y-4">
               <div className="flex flex-col items-center gap-2 rounded-xl px-2 pb-3 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
                 <div className="user-info flex min-h-10 items-center gap-2">
@@ -119,7 +119,7 @@ const DashboardSide = () => {
 
             <button
               onClick={() => setlogoutOpen(true)}
-              className="flex min-h-10 w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white dark:text-white  bg-red-900  hover:bg-red-950/50 transition-colors "
+              className="flex min-h-10 w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white dark:text-white  bg-red-700 hover:bg-red-800 dark:hover:bg-red-950/50 transition-colors "
             >
               Sign Out
             </button>

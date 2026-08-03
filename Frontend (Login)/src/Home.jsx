@@ -7,7 +7,7 @@ import Dashboard from "./Dashboard";
 const Home = ({ setToken }) => {
   const [isFaded, setIsFaded] = React.useState(false);
   const [isFadingOut, setIsFadingOut] = React.useState(false);
-  const [showNext, setShowNext] = React.useState(
+  const [showNext, setShowNext] = React.useState(() =>
     sessionStorage.getItem("seenwelcome") === "true",
   );
 
@@ -50,7 +50,7 @@ const Home = ({ setToken }) => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
+      <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
         <p className="animate-pulse">Loading infomation...</p>
       </div>
     );
