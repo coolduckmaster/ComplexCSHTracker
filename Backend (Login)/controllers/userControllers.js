@@ -227,7 +227,7 @@ const checkCSH = async (req, res) => {
       });
     }
 
-    let cshData = await CSHModel.findOne({ userId });
+    let cshData = await CSHModel.findOne({ userId: userId });
 
     if (!cshData) {
       cshData = await CSHModel.create({
@@ -247,4 +247,42 @@ const checkCSH = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, registerCSH, onboarding, rolesCheck, checkCSH };
+const RequestHandle = async (req, res) => {
+  try {
+    const { userId, ApprovedRequest, PendingRequest } = req.body;
+
+    if (!userId) {
+      return res.json({
+        success: false,
+        message: "No user ID",
+      });
+    }
+
+    let requestData = await extrasModels.findOne({ userId: userId });
+
+    if (!requestData) {
+      requestData = await extrasModels.create({
+        ApprovedRequest: 0,
+        PendingRequest: 0,
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: requestData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export {
+  loginUser,
+  registerUser,
+  registerCSH,
+  onboarding,
+  rolesCheck,
+  checkCSH,
+  RequestHandle
+};

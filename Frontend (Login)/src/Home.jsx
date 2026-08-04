@@ -11,8 +11,12 @@ const Home = ({ setToken }) => {
     () => sessionStorage.getItem("seenwelcome") === "true",
   );
 
-  const [completeOnboard, setCompleteOnboard] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [completeOnboard, setCompleteOnboard] = React.useState(() => {
+    return localStorage.getItem("CompleteOnboard") === "true";
+  });
+  const [isLoading, setIsLoading] = React.useState(() => {
+    return localStorage.getItem("CompleteOnboard") === "true" ? false : true;
+  });
   const storedName = localStorage.getItem("userName") || "User";
 
   React.useEffect(() => {
@@ -20,8 +24,6 @@ const Home = ({ setToken }) => {
     const localstatus = localStorage.getItem("CompleteOnboard");
 
     if (localstatus === "true") {
-      setCompleteOnboard(true);
-      setIsLoading(false);
       return;
     }
 

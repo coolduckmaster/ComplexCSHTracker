@@ -48,10 +48,19 @@ const extraSchema = new mongoose.Schema({
     enum: ["Student", "Teacher", "Admin"],
     default: "Student",
   },
+
+  ApprovedRequest: {
+    type: Number,
+    default: 0,
+  },
+
+  PendingRequest: {
+    type: Number,
+    default: 0,
+  },
 });
 
-const extrasModels =
-  mongoose.models.extra || mongoose.model("extra", extraSchema);
+const extrasModels = mongoose.models.extra || mongoose.model("extra", extraSchema);
 
 const CSHhistory = new mongoose.Schema({
   activityName: {

@@ -18,11 +18,51 @@ import {
 
 export const backendUrl = "http://localhost:4000";
 
+const ProtectedLink = () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return <Outlet />;
+};
+
+const VeryProtectedLink = () => {
+  const token = localStorage.getItem("token");
+  const adtoken = localStorage.getItem("adtoken");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!adtoken) {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet context={{}} />;
+};
+
+const TrProtectedLink = () => {
+  const token = localStorage.getItem("token");
+  const trtoken = localStorage.getItem("trtoken");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  if (!trtoken) {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+};
+
+const PublicLink = () => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+};
+
 const App = () => {
   const isDark = useAutoDarkDetect();
-  const [completeOnBoard, setCompleteOnBoard] = React.useState(
-    localStorage.getItem("CompleteOnboard") || "",
-  );
+  //const [completeOnBoard, setCompleteOnBoard] = React.useState(
+  //localStorage.getItem("CompleteOnboard") || "",
+  //);
   const [token, setToken] = React.useState(localStorage.getItem("token") || "");
   const [adtoken, setAdToken] = React.useState(
     localStorage.getItem("adtoken") || "",
@@ -48,40 +88,6 @@ const App = () => {
       localStorage.removeItem("trtoken");
     }
   }, [token, adtoken, trtoken]);
-
-  const ProtectedLink = () => {
-    if (!token) {
-      return <Navigate to="/login" replace />;
-    }
-    return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
-  };
-
-  const VeryProtectedLink = () => {
-    if (!token) {
-      return <Navigate to="/login" replace />;
-    }
-    if (!adtoken) {
-      return <Navigate to="/" replace />;
-    }
-    return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
-  };
-
-  const TrProtectedLink = () => {
-    if (!token) {
-      return <Navigate to="/login" replace />;
-    }
-    if (!trtoken) {
-      return <Navigate to="/" replace />;
-    }
-    return <Outlet context={{ setToken, setAdToken, setTrToken }} />;
-  };
-
-  const PublicLink = () => {
-    if (token) {
-      return <Navigate to="/" replace />;
-    }
-    return <Outlet />;
-  };
 
   const router = createBrowserRouter(
     createRoutesFromElements(

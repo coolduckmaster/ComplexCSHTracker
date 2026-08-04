@@ -2,6 +2,7 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 
+
 export function useAutoDarkDetect() {
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== "undefined") {

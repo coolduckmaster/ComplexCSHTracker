@@ -8,8 +8,7 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
   const [currentState, setCurrentState] = React.useState("Login");
   const [name, setName] = React.useState("");
   const [NLemail, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [grade, setGrade] = React.useState("");
+  const [password, setPassword] = React.useState("")
 
   const formHandler = async (event) => {
     event.preventDefault();
@@ -26,6 +25,7 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
           toast.success("Account created successfully!");
           localStorage.setItem("userId", response.data.userId);
           localStorage.setItem("userName", response.data.fetchname);
+          window.location.reload()
         } else if (response.data.message === "User already exists") {
           toast.error("User already exists. Please login instead.");
         } else if (response.data.message === "Invalid email") {
@@ -63,12 +63,12 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
             }
 
             if (response.data.message) {
-              toast.success(response.data.message);
+              toast.success(response.data.message)
             }
+            window.location.reload()
           } catch (error) {
             console.error(error);
           }
-
           setToken(response.data.token);
           toast.success("Logged in successfully!");
         } else if (response.data.message === "User does not exist") {

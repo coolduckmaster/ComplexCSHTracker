@@ -1,13 +1,19 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router";
-import { Menu, X, Home, ClipboardEdit, LogOutIcon } from "lucide-react";
+import {
+  Menu,
+  X,
+  Home,
+  ClipboardEdit,
+  LogOutIcon,
+  ShieldCog,
+} from "lucide-react";
 
 const DashboardSide = () => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isRole, setIsRole] = React.useState("Student");
   const [isOpen, setOpen] = React.useState(false); //Open menu yesidfk
   const [logoutOpen, setlogoutOpen] = React.useState(false);
-  const frontendUrl = "http://localhost:5173/";
   const storedName = localStorage.getItem("userName") || "User";
 
   React.useEffect(() => {
@@ -28,6 +34,7 @@ const DashboardSide = () => {
 
     assumeRole();
   }, []);
+
 
   const handleMenu = () => {
     if (isOpen) {
@@ -121,6 +128,7 @@ const DashboardSide = () => {
 
                   {isRole === "Admin" && (
                     <NavLink to="/admin" end className={navLinkClass}>
+                      <ShieldCog className="p-0.5" />
                       Admin
                     </NavLink>
                   )}
@@ -143,7 +151,7 @@ const DashboardSide = () => {
             </aside>
           </div>
 
-          <main className="relative min-h-full min-w-0 flex-1 p-4 relative inline-block">
+          <main className="relative min-h-full min-w-0 flex-1 inline-block">
             <button
               className="absolute md:hidden left-6 top-6 z-50 rounded-xl dark:bg-[#161a22] bg-gray-200 flex p-2 active:scale-[0.93]"
               onClick={handleMenu}

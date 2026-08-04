@@ -6,6 +6,7 @@ import {
   onboarding,
   rolesCheck,
   checkCSH,
+  RequestHandle,
   
 } from "../controllers/userControllers.js";
 
@@ -13,9 +14,12 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/csh/register", registerCSH);
-router.post("/csh/check", checkCSH);
 router.post("/onboarding", onboarding);
-router.post("/extracheck", rolesCheck);
 
+router.post("/csh/requestcheck", RequestHandle)
+router.post("/csh/check", checkCSH);
+router.post("/csh/register", registerCSH);
+
+
+router.post("/extracheck", rolesCheck);
 export default router;
