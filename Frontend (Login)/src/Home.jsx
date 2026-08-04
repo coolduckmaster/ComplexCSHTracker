@@ -7,8 +7,8 @@ import Dashboard from "./Dashboard";
 const Home = ({ setToken }) => {
   const [isFaded, setIsFaded] = React.useState(false);
   const [isFadingOut, setIsFadingOut] = React.useState(false);
-  const [showNext, setShowNext] = React.useState(() =>
-    sessionStorage.getItem("seenwelcome") === "true",
+  const [showNext, setShowNext] = React.useState(
+    () => sessionStorage.getItem("seenwelcome") === "true",
   );
 
   const [completeOnboard, setCompleteOnboard] = React.useState(false);
@@ -111,10 +111,7 @@ const Home = ({ setToken }) => {
         <div
           className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black transition-opacity duration-1000 ease-in-out ${isFadingOut ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >
-          <Onboarding
-            startVisible={true}
-            SetOnboard={handleOnboardCompleted}
-          />
+          <Onboarding startVisible={true} SetOnboard={handleOnboardCompleted} />
         </div>
       )}
     </div>

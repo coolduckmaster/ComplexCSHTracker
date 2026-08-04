@@ -20,7 +20,9 @@ export const backendUrl = "http://localhost:4000";
 
 const App = () => {
   const isDark = useAutoDarkDetect();
-  const [completeOnBoard, setCompleteOnBoard] = React.useState(localStorage.getItem("CompleteOnboard") || "")
+  const [completeOnBoard, setCompleteOnBoard] = React.useState(
+    localStorage.getItem("CompleteOnboard") || "",
+  );
   const [token, setToken] = React.useState(localStorage.getItem("token") || "");
   const [adtoken, setAdToken] = React.useState(
     localStorage.getItem("adtoken") || "",

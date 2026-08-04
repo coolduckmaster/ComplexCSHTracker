@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Clock, CheckIcon, CalendarClock } from "lucide-react";
+import { Clock, CheckIcon, ClipboardEdit } from "lucide-react";
 import React from "react";
 import { backendUrl } from "./App";
 
@@ -48,85 +48,95 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div className="mx-auto w-full min-w-0  p-4 pt-16 md:p-8 lg:pt-8">
-        <div className="mb-6 sm:mb-8 space-y-1">
-          <p className="text-lg text-gray-500 dark:text-gray-400 italic font-mono">
-            Complex CSH Tracker
-          </p>
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white sm:text-3xl lg:text-4xl">
-              {isRole} Dashboard
-            </h1>
-            <p className="text-md text-gray-500 dark:text-gray-400 font-medium">
-              {day}
+      <div className="w-full min-w-0 max-w-7xl p-4 pt-16 md:p-8 lg:pt-8">
+        <div>
+          <div className="mb-2 sm:mb-2 space-y-1">
+            <p className="text-lg text-gray-500 dark:text-gray-400 italic font-mono">
+              Complex CSH Tracker
+            </p>
+            <div className="flex items-center justify-between">
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white sm:text-3xl lg:text-4xl">
+                {isRole} Dashboard
+              </h1>
+              <p className="text-md text-gray-500 dark:text-gray-400 font-medium">
+                {day}
+              </p>
+            </div>
+
+            <p className="text-lg text-gray-500 dark:text-gray-400 font-mono">
+              Here's a quick overview of your CSH.
             </p>
           </div>
 
-          <p className="text-lg text-gray-500 dark:text-gray-400 font-mono">
-            Here's a quick overview of your CSH.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-3 ">
-          <div className="rounded-xl border border-gray-300 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 ">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                <Clock className="h-9 w-9" />
-              </div>
-
-              <div className="flex flex-col">
-                <p className="font-mono text-2sm  font-medium text-gray-600 dark:text-gray-400">
-                  Total Logged
-                </p>
-                <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
-                  {cshData.TotalHours}
-                  <span className="font-mono text-xl font-bold text-gray-900 dark:text-white">
-                    {" "}
-                    hours
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3 ">
+            <div className="rounded-xl border border-mist-300 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-[#161a22]">
+              <div className="flex items-center space-x-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                  <Clock className="h-9 w-9" />
+                </div>
+                <div className="flex flex-col">
+                  <p className="font-mono text-md  font-medium text-gray-600 dark:text-gray-400">
+                    Total Logged
+                  </p>
+                  <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
+                    {cshData.TotalHours}
+                    <span className="font-mono text-sm text-gray-900 dark:text-gray-400">
+                      {" "}
+                      hours
+                    </span>
                   </span>
-                </span>
+                  <span className="font-mono text-sm py-2 font-semibold text-gray-900 dark:text-gray-400">
+                    Your total request:
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-xl border border-gray-300 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
-                <CheckIcon className="h-9 w-9" />
-              </div>
+            <div className="rounded-xl border border-gray-300/50 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-[#161a22]">
+              <div className="flex items-center space-x-4">
+                <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
+                  <CheckIcon className="h-8 w-8" />
+                </div>
 
-              <div className="flex flex-col">
-                <p className="font-mono text-2sm font-medium text-gray-600 dark:text-gray-400">
-                  Approved
-                </p>
-                <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
-                  {cshData.ApprovedHours}
-                  <span className="font-mono text-xl font-bold text-gray-900 dark:text-white">
-                    {" "}
-                    hours
+                <div className="flex flex-col">
+                  <p className="font-mono text-md font-medium text-gray-600 dark:text-gray-400">
+                    Approved
+                  </p>
+                  <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
+                    {cshData.ApprovedHours}
+                    <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-400">
+                      {" "}
+                      hours
+                    </span>
                   </span>
-                </span>
+                  <span className="font-mono text-sm font-semibold py-2 text-gray-900 dark:text-gray-400">
+                    Your approved request:
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-xl border border-gray-300 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="flex items-center space-x-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400">
-                <CalendarClock className="h-9 w-9" />
-              </div>
+            <div className="rounded-xl border border-gray-300/50 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-[#161a22]">
+              <div className="flex items-center space-x-4">
+                <div className="flex h-15 w-15 shrink-0 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400">
+                  <ClipboardEdit className="h-8 w-8" />
+                </div>
 
-              <div className="flex flex-col">
-                <p className="font-mono text-2sm font-medium text-gray-600 dark:text-gray-400">
-                  Pending
-                </p>
-                <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
-                  {cshData.PendingHours}
-                  <span className="font-mono text-xl font-bold text-gray-900 dark:text-white">
-                    {" "}
-                    hours
+                <div className="flex flex-col">
+                  <p className="font-mono text-md  text-gray-600 dark:text-gray-400">
+                    Pending
+                  </p>
+                  <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
+                    {cshData.PendingHours}
+                    <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-400">
+                      {" "}
+                      hours
+                    </span>
                   </span>
-                </span>
+                  <span className="font-mono text-sm font-semibold py-2 text-gray-900 dark:text-gray-400">
+                    Your pending request:
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -20,15 +20,15 @@ const Onboarding = ({ SetOnboard }) => {
     event.preventDefault();
     try {
       const userId = localStorage.getItem("userId");
-      const schoolId = NCschoolId.toUpperCase()
+      const schoolId = NCschoolId.toUpperCase();
       const response = await axios.post(backendUrl + "/api/user/onboarding", {
         userId,
         grade,
         campus,
-        schoolId
+        schoolId,
       });
 
-      if (response.data.success) { 
+      if (response.data.success) {
         toast.success("Infomation has been saved successfully!");
         SetOnboard(true);
         localStorage.setItem("CompleteOnboard", true);
@@ -69,7 +69,7 @@ const Onboarding = ({ SetOnboard }) => {
                 onChange={(e) => setCampus(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
               >
-                <option hidden >Campus:</option>
+                <option hidden>Campus:</option>
                 <option value="Campus A">Campus A</option>
                 <option value="Campus B">Campus B</option>
                 <option value="N/A Campus">N/A</option>
@@ -80,7 +80,7 @@ const Onboarding = ({ SetOnboard }) => {
                 onChange={(e) => setGrade(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
               >
-                <option hidden >Grade:</option>
+                <option hidden>Grade:</option>
                 <option value="Grade 9">Grade 9</option>
                 <option value="Grade 10">Grade 10</option>
                 <option value="Grade 11">Grade 11</option>

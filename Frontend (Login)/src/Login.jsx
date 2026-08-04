@@ -4,7 +4,7 @@ import { backendUrl } from "./App";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const Login = ({ setToken, setAdToken, setTrToken}) => {
+const Login = ({ setToken, setAdToken, setTrToken }) => {
   const [currentState, setCurrentState] = React.useState("Login");
   const [name, setName] = React.useState("");
   const [NLemail, setEmail] = React.useState("");
@@ -71,7 +71,6 @@ const Login = ({ setToken, setAdToken, setTrToken}) => {
 
           setToken(response.data.token);
           toast.success("Logged in successfully!");
-
         } else if (response.data.message === "User does not exist") {
           toast.error("User does not exist. Please sign up first.");
         } else {

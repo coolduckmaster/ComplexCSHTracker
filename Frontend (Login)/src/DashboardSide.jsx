@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, Outlet } from "react-router";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Home, ClipboardEdit, LogOutIcon } from "lucide-react";
 
 const DashboardSide = () => {
   const [isVisible, setIsVisible] = React.useState(false);
@@ -29,11 +29,19 @@ const DashboardSide = () => {
     assumeRole();
   }, []);
 
+  const handleMenu = () => {
+    if (isOpen) {
+      setOpen(false);
+    } else {
+      setOpen(true);
+    }
+  };
+
   const navLinkClass = ({ isActive }) =>
     `group flex min-h-10 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ease-[cubic-bezier(0.2,0,0,1)] active:scale-[0.96] ${
       isActive
         ? "bg-gray-300 dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-semibold"
-        : "hover:bg-gray-300/60 dark:hover:bg-gray-800/80 hover:text-blue-600 dark:hover:text-blue-400"
+        : "hover:bg-gray-300/60 dark:hover:bg-gray-600/20 hover:text-blue-600 dark:hover:text-blue-400"
     }`;
 
   return (
@@ -84,47 +92,64 @@ const DashboardSide = () => {
         </div>
       )}
       <div
-        className={`h-screen w-full bg-[#d1d5da] dark:bg-mist-950 dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`min-h-screen w-full bg-[#d1d5da] dark:bg-mist-950 dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div className="flex min-h-screen">
-          <aside className=" hidden md:flex flex-col justify-between h-screen w-60 overflow-y-auto rounded-r-2xl px-3 py-4 text-surface-content shadow-2xl dark:outline-white/14 dark:outline-1 outline-black/10 outline-1 bg-[#e1e4e8] dark:bg-[#161a22] ">
-            <div className="space-y-4">
-              <div className="flex flex-col items-center gap-2 rounded-xl px-2 pb-3 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
-                <div className="user-info flex min-h-10 items-center gap-2">
-                  <span className="font-medium text-xl">{storedName}</span>
-                </div>
-              </div>
-              <nav className="space-y-1">
-                <NavLink to="/" end className={navLinkClass}>
-                  Home
-                </NavLink>
-
-                <NavLink to="/requests" end className={navLinkClass}>
-                  Request
-                </NavLink>
-
-                {isRole === "Admin" && (
-                  <NavLink to="/admin" end className={navLinkClass}>
-                    Admin
-                  </NavLink>
-                )}
-
-                {isRole === "Teacher" && (
-                  <NavLink to="/approval" className={navLinkClass}>
-                    Approval Panel
-                  </NavLink>
-                )}
-              </nav>
-            </div>
-
-            <button
-              onClick={() => setlogoutOpen(true)}
-              className="flex min-h-10 w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white dark:text-white  bg-red-700 hover:bg-red-800 dark:hover:bg-red-950/50 transition-colors "
+          <div
+            className={`${isOpen ? "bits-modal-overlay fixed inset-0 z-9999 backdrop-blur-md" : ""}`}
+            onClick={isOpen ? handleMenu : null}
+          >
+            <aside
+              className={`${isOpen ? "bits-modal-content fixed inset-0 z-10000 md:flex md:justify-between" : "hidden md:flex"}  flex h-screen w-60 shrink-0 flex-col justify-between rounded-r-2xl bg-[#e1e4e8] px-3 py-4 text-surface-content shadow-2xl outline-1 outline-black/10 dark:bg-[#161a22] dark:outline-white/14`}
             >
-              Sign Out
+              <div className="space-y-4">
+                <div className="flex flex-col items-center gap-2 rounded-xl px-2 pb-3 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
+                  <div className="user-info flex min-h-10 items-center gap-2">
+                    <span className="font-medium text-xl">{storedName}</span>
+                  </div>
+                </div>
+                <nav className="space-y-1 gap-2 items-center text-md">
+                  <NavLink to="/" end className={navLinkClass}>
+                    <Home className="p-0.5" />
+                    Home
+                  </NavLink>
+
+                  <NavLink to="/requests" end className={navLinkClass}>
+                    <ClipboardEdit className="p-0.5" />
+                    Request
+                  </NavLink>
+
+                  {isRole === "Admin" && (
+                    <NavLink to="/admin" end className={navLinkClass}>
+                      Admin
+                    </NavLink>
+                  )}
+
+                  {isRole === "Teacher" && (
+                    <NavLink to="/approval" className={navLinkClass}>
+                      Approval Panel
+                    </NavLink>
+                  )}
+                </nav>
+              </div>
+
+              <button
+                onClick={() => setlogoutOpen(true)}
+                className="flex min-h-10 w-full items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white dark:text-white  bg-red-700 hover:bg-red-800 dark:hover:bg-red-950/50 transition-colors "
+              >
+                <LogOutIcon className="p-0.5" />
+                Sign Out
+              </button>
+            </aside>
+          </div>
+
+          <main className="relative min-h-full min-w-0 flex-1 p-4 relative inline-block">
+            <button
+              className="absolute md:hidden left-6 top-6 z-50 rounded-xl dark:bg-[#161a22] bg-gray-200 flex p-2 active:scale-[0.93]"
+              onClick={handleMenu}
+            >
+              <Menu />
             </button>
-          </aside>
-          <main className="min-h-screen min-w-0 flex-1 ">
             <Outlet />
           </main>
         </div>
