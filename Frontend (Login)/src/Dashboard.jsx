@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Clock, CircleCheckBig, ClipboardClock } from "lucide-react";
+import { Clock, CircleCheckBig, ClipboardClock, CalendarDays} from "lucide-react";
 import React from "react";
 import { backendUrl } from "./App";
 
@@ -66,36 +66,37 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div className="w-full min-w-0 max-w-7xl p-4 pt-16 md:p-8 lg:pt-8">
+      <div className="w-full min-w-0 p-4 pt-16 md:p-9 lg:pt-9">
         <div className="mb-2 sm:mb-2 space-y-1">
-          <p className="text-lg text-gray-500 dark:text-gray-400 italic font-mono">
+          <p className="text-base text-gray-500 dark:text-gray-400 italic font-mono">
             Complex CSH Tracker
           </p>
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white sm:text-3xl lg:text-4xl">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-2xl lg:text-3xl">
               {isRole} Dashboard
             </h1>
-            <p className="text-md text-gray-500 dark:text-gray-400 font-medium">
+            <p className="flex text-base gap-2 text-gray-500 dark:text-gray-400 font-medium">
+              <CalendarDays/>
               {day}
             </p>
           </div>
 
-          <p className="text-lg text-gray-500 dark:text-gray-400 font-mono">
+          <p className="text-base text-gray-500 dark:text-gray-400 font-mono">
             Here's a quick overview of your CSH.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-3 ">
-          <div className="rounded-xl border border-mist-300 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-[#161a22]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-3 mt-4">
+          <div className="rounded-xl bg-gray-200 p-4 shadow-sm dark:bg-[#161a22] shadow-white/30">
             <div className="flex items-center space-x-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                 <Clock className="h-9 w-9" />
               </div>
               <div className="flex flex-col">
-                <p className="font-mono text-md  font-medium text-gray-600 dark:text-gray-400">
+                <p className="font-mono text-base font-medium text-gray-600 dark:text-gray-400">
                   Total Logged
                 </p>
-                <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
+                <span className="font-mono text-3xl font-bold text-gray-900 dark:text-white">
                   {cshData.TotalHours}
                   <span className="font-mono text-sm text-gray-900 dark:text-gray-400">
                     {" "}
@@ -109,17 +110,17 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-300/50 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-[#161a22]">
+          <div className="rounded-xl bg-gray-200 p-4 shadow-sm dark:bg-[#161a22] shadow-white/30">
             <div className="flex items-center space-x-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
                 <CircleCheckBig className="h-9 w-9" />
               </div>
 
               <div className="flex flex-col">
-                <p className="font-mono text-md font-medium text-gray-600 dark:text-gray-400">
+                <p className="font-mono text-base font-medium text-gray-600 dark:text-gray-400">
                   Approved
                 </p>
-                <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
+                <span className="font-mono text-3xl font-bold text-gray-900 dark:text-white">
                   {cshData.ApprovedHours}
                   <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-400">
                     {" "}
@@ -133,17 +134,17 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-300/50 bg-gray-200 p-4 shadow-sm dark:border-gray-700 dark:bg-[#161a22]">
+          <div className="rounded-xl bg-gray-200 p-4 shadow-sm dark:bg-[#161a22] shadow-white/30">
             <div className="flex items-center space-x-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400">
                 <ClipboardClock className="h-9 w-9" />
               </div>
 
               <div className="flex flex-col">
-                <p className="font-mono text-md  text-gray-600 dark:text-gray-400">
+                <p className="font-mono text-base  text-gray-600 dark:text-gray-400">
                   Pending
                 </p>
-                <span className="font-mono text-4xl font-bold text-gray-900 dark:text-white">
+                <span className="font-mono text-3xl font-bold text-gray-900 dark:text-white">
                   {cshData.PendingHours}
                   <span className="font-mono text-sm font-bold text-gray-900 dark:text-gray-400">
                     {" "}

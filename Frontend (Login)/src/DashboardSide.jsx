@@ -107,7 +107,7 @@ const DashboardSide = () => {
             onClick={isOpen ? handleMenu : null}
           >
             <aside
-              className={`${isOpen ? "bits-modal-content fixed inset-0 z-10000 md:flex md:justify-between" : "hidden md:flex"}  flex h-screen w-60 shrink-0 flex-col justify-between rounded-r-2xl bg-[#e1e4e8] px-3 py-4 text-surface-content shadow-2xl outline-1 outline-black/10 dark:bg-[#161a22] dark:outline-white/14`}
+              className={`${isOpen ? "bits-modal-content fixed inset-0 z-10000 md:flex md:justify-between" : "hidden md:flex"}  flex h-screen w-55 shrink-0 flex-col justify-between rounded-r-2xl bg-[#e1e4e8] px-3 py-4 text-surface-content shadow-2xl outline-1 outline-black/10 dark:bg-[#161a22] dark:outline-white/14`}
             >
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-2 rounded-xl px-2 pb-3 shadow-[0_1px_0_rgba(255,255,255,0.08)]">

@@ -261,7 +261,7 @@ const RequestHandle = async (req, res) => {
     let requestData = await extrasModels.findOne({ userId: userId });
 
     if (!requestData) {
-      requestData = await extrasModels.create({
+      requestData = awaitextrasModels.create({
         ApprovedRequest: 0,
         PendingRequest: 0,
       });
