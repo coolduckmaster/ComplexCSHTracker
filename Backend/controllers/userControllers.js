@@ -182,7 +182,13 @@ const onboarding = async (req, res) => {
   }
 };
 
+const approveCSH = async (req, res) => {
+
+}
+
 const registerCSH = async (req, res) => {
+  const fullDate = new Date().toISOString().split("T")[0];
+
   try {
     const { userId, activityName, requestHours, dateofActivity, vouch } =
       req.body;
@@ -194,9 +200,19 @@ const registerCSH = async (req, res) => {
       });
     }
 
+    if (dateofActivity > fullDate) {
+      return res.json({
+        success: false,
+        message: "Error: Date of actvity invaild!",
+      });
+    }
+
+    const numberoHours = Number(requestHours);
+
     const registering = await CSHModel.findOneAndUpdate(
       { userId: userId },
       {
+        $inc: { PendingHours: requestHours },
         $push: {
           history: {
             activityName,
@@ -209,6 +225,13 @@ const registerCSH = async (req, res) => {
       },
       { new: true, upsert: true },
     );
+
+    await extrasModels.findOneAndUpdate(
+      { userId: userId },
+      { $inc: { PendingRequest: 1 } },
+      { upsert: true },
+    );
+
     res.json({ success: true, message: "CSH logged successfully" });
   } catch (error) {
     console.log(error);
@@ -247,7 +270,7 @@ const checkCSH = async (req, res) => {
   }
 };
 
-const RequestHandle = async (req, res) => {
+const requestHandle = async (req, res) => {
   try {
     const { userId, ApprovedRequest, PendingRequest } = req.body;
 
@@ -284,5 +307,5 @@ export {
   onboarding,
   rolesCheck,
   checkCSH,
-  RequestHandle
+  requestHandle,
 };

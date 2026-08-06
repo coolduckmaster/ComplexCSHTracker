@@ -1,4 +1,8 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
+import { backendUrl } from "./App";
+import axios from "axios";
+import { toast } from "react-toastify";
 import {
   SendHorizontal,
   Info,
@@ -10,11 +14,47 @@ import {
 
 const CSHRequest = () => {
   //const [isVisible, setIsVisible] = React.useState(false);
+  const [inputCD, setInputCD] = React.useState(false);
   const [inputType, setInputType] = React.useState("text");
+  const [activityName, setActivityName] = React.useState("");
+  const [requestHours, setRequestHours] = React.useState("");
+  const [doa, setDoA] = React.useState("");
+  const [vouch, setVouch] = React.useState("");
 
-  React.useEffect(() => {
-    setTimeout(() => {}, 50);
-  }, []);
+  function handleCoolDown() {
+    setInputCD(true);
+    setTimeout(() => {
+      setInputCD(false);
+    }, 10000);
+  }
+
+  const formHandler = async (event) => {
+    event.preventDefault();
+    if (!inputCD) {
+      try {
+        const userId = localStorage.getItem("userId");
+        const response = await axios.post(
+          backendUrl + "/api/user/csh/register",
+          {
+            userId,
+            activityName,
+            requestHours,
+            dateofActivity: doa,
+            vouch,
+          },
+        );
+        if (response.data.success) {
+          toast.success("RegisterCSH");
+          handleCoolDown();
+        } else {
+          toast.error(response.data.message);
+        }
+      } catch (error) {
+        toast.error("An error occurred while submitting the request.");
+        console.log(error);
+      }
+    }
+  };
 
   return (
     <div>
@@ -33,11 +73,16 @@ const CSHRequest = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <form className="w-3xl max-w-full mt-4 grow-3 bg-[#e1e4e8] rounded-2xl shadow-lg space-y-6 dark:bg-[#161a22] dark:text-white">
+          <form
+            onSubmit={formHandler}
+            className="w-3xl max-w-full mt-4 grow-3 bg-[#e1e4e8] rounded-2xl shadow-lg space-y-6 dark:bg-[#161a22] dark:text-white"
+          >
             <div className="grid grid-cols-2 gap-6 p-5">
               <div className="flex flex-col space-y-2 mt-2">
                 <p>Activity Name</p>
                 <input
+                  onChange={(e) => setActivityName(e.target.value)}
+                  required
                   type="string"
                   placeholder="e.g., Beach Cleanup, PTC"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white  not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
@@ -50,6 +95,8 @@ const CSHRequest = () => {
               <div className="flex flex-col space-y-2 mt-2">
                 <p>Requested Hours</p>
                 <input
+                  onChange={(e) => setRequestHours(e.target.value)}
+                  required
                   type="number"
                   min="0"
                   placeholder="e.g., 3, 5"
@@ -64,10 +111,12 @@ const CSHRequest = () => {
                 <p>Date of Activity</p>
                 <input
                   type={inputType}
+                  required
                   onFocus={() => setInputType("date")}
                   onBlur={(e) => {
                     if (!e.target.value) setInputType("text");
                   }}
+                  onChange={(e) => setDoA(e.target.value)}
                   placeholder="Select date"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white  not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
                 ></input>
@@ -79,23 +128,35 @@ const CSHRequest = () => {
               <div className="flex flex-col space-y-2">
                 <p>Vouch</p>
                 <input
-                  type="string"
+                  type="text"
+                  required
                   placeholder=""
+                  onChange={(e) => setVouch(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white  not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
                 ></input>
               </div>
-
-              <button className="w-45 flex justify-center items-center gap-3 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-md transition duration-300">
-                Submit Request
-                <SendHorizontal className="h-5 w-5" />
-              </button>
+              <div
+                onClick={() =>
+                  inputCD &&
+                  toast.error("Please wait 10 seconds before submitting again.")
+                }
+              >
+                <button
+                  disabled={inputCD}
+                  className={`w-45 flex justify-center items-center gap-3 text-sm font-medium py-2 rounded-md transition duration-300 
+                  ${inputCD ? "bg-gray-400 cursor-not-allowed text-gray-200" : "bg-blue-600 hover:bg-blue-700 text-white"}
+                  `}
+                >
+                  Submit Request
+                </button>
+              </div>
             </div>
           </form>
 
           <div className="mt-4 ml-3 p-5 gap-3 grow bg-[#e1e4e8] rounded-2xl shadow-lg dark:bg-[#161a22] dark:text-white">
             <div className="flex items-center gap-2 mb-4">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-blue-500 bg-mist-950">
-              <Info className="h- w-5" />
+                <Info className="h- w-5" />
               </div>
               <span className="text-base font-semibold">
                 Request Guidelines
@@ -105,7 +166,7 @@ const CSHRequest = () => {
             <div className="grid grid-cols-1 gap-6 ml-2 text-sm">
               <div className="flex gap-4 items-center">
                 <div className="text-white/60">
-                <Clock className="h-7 w-7" />
+                  <Clock className="h-7 w-7" />
                 </div>
                 <span className="flex flex-col">
                   Submit requests within 7 days
@@ -115,31 +176,37 @@ const CSHRequest = () => {
 
               <div className="flex gap-4 items-center">
                 <div className="text-white/60">
-                <CheckCircle className="h-7 w-7" />
+                  <CheckCircle className="h-7 w-7" />
                 </div>
                 <span className="flex flex-col">
                   You will be notified once
-                  <span className="text-white/60">your request has been approved.</span>
+                  <span className="text-white/60">
+                    your request has been approved.
+                  </span>
                 </span>
               </div>
 
               <div className="flex gap-4 items-center">
                 <div className="text-white/60">
-                <Hourglass className="h-7 w-7" />
+                  <Hourglass className="h-7 w-7" />
                 </div>
                 <span className="flex flex-col">
                   Be honest with your hours.
-                  <span className="text-white/60">Ensure that your hours are correct.</span>
+                  <span className="text-white/60">
+                    Ensure that your hours are correct.
+                  </span>
                 </span>
               </div>
 
               <div className="flex gap-4 items-center">
                 <div className="text-white/60">
-                <FileText className="h-7 w-7" />
+                  <FileText className="h-7 w-7" />
                 </div>
                 <span className="flex flex-col">
                   Submit accurate infomation.
-                  <span className="text-white/60">Double-check your hours and details.</span>
+                  <span className="text-white/60">
+                    Double-check your hours and details.
+                  </span>
                 </span>
               </div>
             </div>

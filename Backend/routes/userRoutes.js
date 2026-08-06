@@ -6,7 +6,7 @@ import {
   onboarding,
   rolesCheck,
   checkCSH,
-  RequestHandle,
+  requestHandle,
   
 } from "../controllers/userControllers.js";
 
@@ -16,7 +16,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/onboarding", onboarding);
 
-router.post("/csh/requestcheck", RequestHandle)
+router.post("/csh/requestcheck", requestHandle)
 router.post("/csh/check", checkCSH);
 router.post("/csh/register", registerCSH);
 
