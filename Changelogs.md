@@ -66,14 +66,15 @@ I am the programmer, *7 hours* of my life, wasted on this website. [Please help 
 (8/11/2026)
 + Frontend fixes for "404" page
 + Frontend edits for "Approval"
- - Added a teacher's note. (NO BACKEND) 
+  - Added a teacher's note. (NO BACKEND) 
 
 ---- 
 (08/13/26)
 + Added Changeloghelper.py
- - Writes changelog with simple commands
+  - Writes changelog with simple commands
 
 ---- 
 (08/17/26)
 + Frontend edits to "Admin"
- - Approval UI edits in Admin test ground.
+  - Approval UI edits in Admin test ground.
+

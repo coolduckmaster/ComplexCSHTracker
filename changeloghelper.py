@@ -101,7 +101,7 @@ def preseteditor():
   while True:
     subnote = input("Add a subnote?(Leave empty to skip): ").strip()
     if subnote:
-        changelogstring += f"\n - {subnote}"
+        changelogstring += f"\n  - {subnote}"
     else:
         break
   
@@ -113,9 +113,8 @@ def preseteditor():
         if f"({format})" not in filecontent:
             file.write(dateheader)
         file.write(f"+ {changelogstring}\n")
-  
+        print(f"+ {changelogstring}")
 
-  print("Changelog: ", changelogstring)
   newcheck()
 
 def customeditor():
@@ -123,7 +122,7 @@ def customeditor():
   while True:
     customsubnote = input("Add custom subnote?: ").strip()
     if customsubnote:
-        customstring += f"\n - {customsubnote}"
+        customstring += f"\n  - {customsubnote}"
     else:
         break  
   
