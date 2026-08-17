@@ -1,4 +1,5 @@
 import express from "express";
+import { authCheck, authware, authwareLean } from "../middleware/authware.js";
 import {
   registerUser,
   loginUser,
@@ -7,6 +8,8 @@ import {
   rolesCheck,
   checkCSH,
   requestHandle,
+  getPendingCSH,
+  approvedenyCSH,
   
 } from "../controllers/userControllers.js";
 
@@ -16,10 +19,13 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/onboarding", onboarding);
 
-router.post("/csh/requestcheck", requestHandle)
-router.post("/csh/check", checkCSH);
-router.post("/csh/register", registerCSH);
+router.post("/csh/requestcheck", authwareLean, requestHandle)
+router.post("/csh/check", authwareLean, checkCSH);
+router.post("/csh/register",  registerCSH);
+router.get("/csh/fetchpendingreq", authware, getPendingCSH);
+router.post("/csh/approval", authware, approvedenyCSH)
 
 
 router.post("/extracheck", rolesCheck);
+router.post("/authcheck", authCheck)
 export default router;

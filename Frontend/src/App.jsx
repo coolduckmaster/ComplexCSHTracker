@@ -1,9 +1,17 @@
+/**
+ *      _____                __          ___________ __  ______             __          
+ *     / ___/__  __ _  ___  / /____ __  / ___/ __/ // / /_  __/______ _____/ /_____ ____
+ *    / /__/ _ \/  ' \/ _ \/ / -_) \ / / /___\ \/ _  /   / / / __/ _ `/ __/  '_/ -_) __/
+ *    \___/\___/_/_/_/ .__/_/\__/_\_\  \___/___/_//_/   /_/ /_/  \_,_/\__/_/\_\\__/_/   
+ *                  /_/                                                                 
+ */
 import React from "react";
 import Login from "./Login";
 import Home from "./Home";
 import Admin from "./Admin";
 import CSHRequest from "./CSHRequest";
 import CSHPanel from "./CSHPanel";
+import Notfound from "./404"
 import { useAutoDarkDetect } from "./misc";
 import DashboardSide from "./DashboardSide";
 import { ToastContainer } from "react-toastify";
@@ -103,6 +111,7 @@ const App = () => {
               />
             }
           />
+          
         </Route>
 
         <Route element={<ProtectedLink />}>
@@ -133,7 +142,7 @@ const App = () => {
 
         <Route
           path="*"
-          element={<Navigate to={token ? "/" : "/login"} replace />}
+          element={<Notfound/>}
         />
       </Route>,
     ),

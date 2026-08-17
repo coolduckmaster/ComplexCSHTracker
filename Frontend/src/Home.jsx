@@ -53,7 +53,7 @@ const Home = ({ setToken }) => {
   if (isLoading) {
     return (
       <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
-        <p className="animate-pulse">Loading infomation...</p>
+        <p>Loading infomation...</p>
       </div>
     );
   }

@@ -7,6 +7,7 @@ import {
   ClipboardEdit,
   LogOutIcon,
   ShieldCog,
+  FileText,
 } from "lucide-react";
 
 const DashboardSide = () => {
@@ -111,8 +112,9 @@ const DashboardSide = () => {
             >
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-2 rounded-xl px-2 pb-3 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
-                  <div className="user-info flex min-h-10 items-center gap-2">
+                  <div className="user-info flex flex-col min-h-10 items-center">
                     <span className="font-medium text-xl">{storedName}</span>
+                    <span className="font-medium dark:text-gray-500 text-sm">{isRole}</span>
                   </div>
                 </div>
                 <nav className="space-y-1 gap-2 items-center text-md">
@@ -135,6 +137,7 @@ const DashboardSide = () => {
 
                   {isRole === "Teacher" && (
                     <NavLink to="/approval" className={navLinkClass}>
+                      <FileText className="p-0.5" />
                       Approval Panel
                     </NavLink>
                   )}

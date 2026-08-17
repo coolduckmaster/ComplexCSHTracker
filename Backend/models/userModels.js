@@ -93,6 +93,15 @@ const CSHhistory = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+
+  description: {
+    type: String,
+    required:true,
+  },
+
+  trnote:{
+    type: String,
+  }
 });
 
 const CSHSchema = new mongoose.Schema(

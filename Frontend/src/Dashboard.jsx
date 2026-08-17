@@ -1,7 +1,22 @@
 import axios from "axios";
-import { Clock, CircleCheckBig, ClipboardClock, CalendarDays} from "lucide-react";
+import {
+  Clock,
+  CircleCheckBig,
+  ClipboardClock,
+  CalendarDays,
+} from "lucide-react";
 import React from "react";
 import { backendUrl } from "./App";
+import { toast } from "react-toastify";
+
+axios.interceptors.request.use((config) => {
+  config.baseURL = backendUrl + "/api/user/";
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const Dashboard = () => {
   const [cshData, setCshData] = React.useState({
@@ -14,6 +29,7 @@ const Dashboard = () => {
     PendingRequest: 0,
   });
   const [isRole, setIsRole] = React.useState("Student");
+  const [isLoading, setIsLoading] = React.useState(true);
   const totalRequest = requestData.ApprovedRequest + requestData.PendingRequest;
 
   const today = new Date();
@@ -25,16 +41,14 @@ const Dashboard = () => {
       if (!userId) return;
 
       try {
-        const response = await axios.post(backendUrl + "/api/user/csh/check", {
-          userId,
-        });
-
-        const responserequest = await axios.post(
-          backendUrl + "/api/user/csh/requestcheck",
-          {
+        const [response, responserequest] = await Promise.all([
+          axios.post("csh/check", {
             userId,
-          },
-        );
+          }),
+          axios.post("csh/requestcheck", {
+            userId,
+          }),
+        ]);
 
         if (response.data.success) {
           setCshData(response.data.data);
@@ -45,6 +59,18 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error("Error fetching CSH data:", error);
+        if (error.response && error.response.status === 403) {
+          toast.error("Invalid Token! Returning to login..");
+          setTimeout(() => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.replace("/");
+          }, 2000);
+        } else {
+          toast.error("An error has occurred while fetching your data!");
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -64,6 +90,14 @@ const Dashboard = () => {
     assumeRole();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="w-full min-w-0 p-4 pt-16 md:p-9 lg:pt-9">
@@ -76,7 +110,7 @@ const Dashboard = () => {
               {isRole} Dashboard
             </h1>
             <p className="flex text-base gap-2 text-gray-500 dark:text-gray-400 font-medium">
-              <CalendarDays/>
+              <CalendarDays />
               {day}
             </p>
           </div>

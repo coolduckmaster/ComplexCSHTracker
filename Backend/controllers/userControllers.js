@@ -10,14 +10,21 @@ const createToken = (id) => {
 const rolesCheck = async (req, res) => {
   try {
     const { userId } = req.body;
+    if (!userId) {
+      return res.json({ success: false, message: "User ID is required." });
+    }
+
     const checkId = await extrasModels.findOne({ userId: userId });
+
     if (!checkId) {
       return res.status(400).json({ success: false, message: "" });
     }
+
     const fetchrole = checkId.role;
+
     if (fetchrole === "Admin") {
       const adtoken = jwt.sign(
-        { userId, role: "Admin" },
+        { userId, role: fetchrole },
         process.env.JWT_SECRET,
       );
       return res.json({
@@ -27,7 +34,7 @@ const rolesCheck = async (req, res) => {
       });
     } else if (fetchrole === "Teacher") {
       const trtoken = jwt.sign(
-        { userId, role: "Teacher" },
+        { userId, role: fetchrole },
         process.env.JWT_SECRET,
       );
       return res.json({ success: true, message: "Teacher access.", trtoken });
@@ -182,18 +189,159 @@ const onboarding = async (req, res) => {
   }
 };
 
-const approveCSH = async (req, res) => {
+const getPendingCSH = async (req, res) => {
+  try {
+    const getPendingReq = await CSHModel.aggregate([
+      { $unwind: "$history" },
+      { $match: { "history.status": "Pending" } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { "history.submittedAt": 1 } },
+      {
+        $project: {
+          _id: 0,
+          requestId: "$history._id",
+          userId: "$user._id",
+          userName: "$user.name",
+          grade: "$user.grade",
+          campus: "$user.campus",
+          schoolId: "$user.schoolId",
+          activityName: "$history.activityName",
+          requestHours: "$history.requestHours",
+          dateofActivity: "$history.dateofActivity",
+          vouch: "$history.vouch",
+          submittedAt: "$history.submittedAt",
+          description: "$history.description",
+        },
+      },
+    ]);
 
-}
+    return res.json({
+      success: true,
+      count: getPendingReq.length,
+      data: getPendingReq,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+const approvedenyCSH = async (req, res) => {
+  try {
+    const { userId, requestId, status, trnote } = req.body;
+
+    if (!userId || !requestId) {
+      return res.json({ success: false, message: "Missing infomation!" });
+    }
+
+    if (trnote !== undefined && !status) {
+      try {
+        const updateNote = await CSHModel.findOneAndUpdate(
+          {
+            userId,
+            "history._id": requestId,
+          },
+          {
+            $set: { "history.$.trnote": trnote },
+          },
+          { new: true },
+        );
+
+        return res.json({ success: true, message: "Added note!" });
+      } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: error });
+      }
+    }
+
+    if (!status) {
+      return res.json({ success: false, message: "No status data sent!" });
+    }
+
+    const User = await CSHModel.findOne({ userId });
+    const History = User.history.find(
+      (item) =>
+        item._id.toString() === requestId || item.requestId === requestId,
+    );
+
+    if (!User || !History) {
+      return res.json({ success: false, message: "Doesn't exist." });
+    }
+
+    const hours = Number(History.requestHours);
+    const isApproved = status === "Approved";
+
+    const updateCSH = await CSHModel.findOneAndUpdate(
+      {
+        userId,
+        history: { $elemMatch: { _id: requestId, status: "Pending" } },
+      },
+      {
+        $set: { "history.$.status": status },
+        $inc: {
+          PendingHours: -hours,
+          ...(isApproved && { ApprovedHours: hours }),
+        },
+      },
+      { new: true },
+    );
+
+    if (!updateCSH) {
+      return res.json({
+        sucess: false,
+        message: "Request was already processed, status is no longer pending.",
+      });
+    }
+
+    await extrasModels.findOneAndUpdate(
+      { userId },
+      {
+        $inc: {
+          PendingRequest: -1,
+          ...(isApproved && { ApprovedRequest: 1 }),
+        },
+      },
+      { upsert: true },
+    );
+
+    return res.json({
+      success: true,
+      message: `CSH Requests has been successfully ${status.toLowerCase()}`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: "Internal server error" });
+  }
+};
 
 const registerCSH = async (req, res) => {
   const fullDate = new Date().toISOString().split("T")[0];
 
   try {
-    const { userId, activityName, requestHours, dateofActivity, vouch } =
-      req.body;
+    const {
+      userId,
+      activityName,
+      requestHours,
+      dateofActivity,
+      vouch,
+      description,
+    } = req.body;
 
-    if (!activityName || !requestHours || !dateofActivity || !vouch) {
+    if (
+      !activityName ||
+      !requestHours ||
+      !dateofActivity ||
+      !vouch ||
+      !description
+    ) {
       return res.json({
         success: false,
         message: "Missing required infomation",
@@ -220,6 +368,7 @@ const registerCSH = async (req, res) => {
             dateofActivity: new Date(dateofActivity),
             vouch,
             status: "Pending",
+            description,
           },
         },
       },
@@ -308,4 +457,6 @@ export {
   rolesCheck,
   checkCSH,
   requestHandle,
+  getPendingCSH,
+  approvedenyCSH,
 };
