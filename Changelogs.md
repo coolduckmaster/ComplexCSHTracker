@@ -78,3 +78,17 @@ I am the programmer, *7 hours* of my life, wasted on this website. [Please help 
 + Frontend edits to "Admin"
   - Approval UI edits in Admin test ground.
 
+
+---- 
+(08/18/26)
++ Frontend edits to "Admin"
+  - Overwrite button
+
+---- 
+(08/22/26)
++ Frontend edits to "Login"
+  - Added a Google OAuth Button
++ Backend API edits to "userControllers"
+  - Added backend for Auth
+  - Added backend for Overwrite
+...No other recollection

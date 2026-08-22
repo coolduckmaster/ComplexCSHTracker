@@ -2,6 +2,7 @@ import vaildator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { userModels, CSHModel, extrasModels } from "../models/userModels.js";
+import { OAuth2Client } from "google-auth-library";
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET);
@@ -73,6 +74,76 @@ const loginUser = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const loginOauth = async (req, res) => {
+  const client = new OAuth2Client(process.env.OAUTHCLIENT_ID);
+  const { OAuthtoken } = req.body;
+  if (!OAuthtoken) {
+    return res.status(400).json({ success: false, message: "No token given!" });
+  }
+
+  try {
+    const verify = await client.verifyIdToken({
+      idToken: OAuthtoken,
+      audience: process.env.OAUTHCLIENT_ID,
+    });
+    const payload = verify.getPayload();
+    if (!payload.email_verified) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Google account email is not verified!",
+        });
+    }
+    const { sub: googleId, email, name, picture } = payload;
+    let user = await userModels.findOne({ $or: [{ googleId }, { email }] });
+
+    if (!user) {
+      const randomPassword = Math.random().toString(36).slice(-8) + Date.now().toString();
+      const salt = await bcrypt.genSalt(10);
+      const hashedRandomPassword = await bcrypt.hash(randomPassword, salt)
+
+      user = await userModels.create({
+        googleId,
+        email,
+        name,
+        password: hashedRandomPassword,
+        avatarUrl: picture  || "",
+      });
+    } else {
+      let amiupdate = false;
+      if (!user.googleId) {
+        user.googleId = googleId;
+        amiupdate = true;
+      }
+       if (picture && user.avatarUrl !== picture) {
+        user.avatarUrl = picture;
+        amiupdate = true;
+      }
+
+      if (amiupdate) {
+        await user.save();
+      }
+    }
+    const token = createToken(user._id);
+
+    return res.json({
+      success: true,
+      message: "Login successfully",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: "Internal server error during Google Auth" });
   }
 };
 
@@ -236,14 +307,31 @@ const getPendingCSH = async (req, res) => {
 
 const approvedenyCSH = async (req, res) => {
   try {
-    const { userId, requestId, status, trnote } = req.body;
+    const { userId, requestId, status, trnote, ow } = req.body;
 
     if (!userId || !requestId) {
       return res.json({ success: false, message: "Missing infomation!" });
     }
 
-    if (trnote !== undefined && !status) {
+    if (trnote && !status) {
       try {
+        const exist = await CSHModel.findOne({
+          userId,
+          history: {
+            $elemMatch: {
+              _id: requestId,
+              trnote: { $exists: true, $ne: "" },
+            },
+          },
+        });
+
+        if (exist && !ow) {
+          return res.json({
+            success: false,
+            message: "Trnote exist, overwrite",
+          });
+        }
+
         const updateNote = await CSHModel.findOneAndUpdate(
           {
             userId,
@@ -451,6 +539,7 @@ const requestHandle = async (req, res) => {
 
 export {
   loginUser,
+  loginOauth,
   registerUser,
   registerCSH,
   onboarding,

@@ -134,6 +134,9 @@ def customeditor():
             file.write(dateheader)
         file.write(f"+ {customstring}\n")
         print(f"+ {customstring}")
+
+  newcheck()
+
     
 
 

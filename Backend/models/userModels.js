@@ -4,15 +4,22 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    trim: true,
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
     required: true,
+  },
+  avatarUrl: {
+    type: String,
+    default: "",
   },
   grade: {
     type: String,
@@ -20,11 +27,16 @@ const userSchema = new mongoose.Schema({
   campus: {
     type: String,
   },
+  googleId: {
+    type: String,
+    default:null,
+  },
   schoolId: {
     type: String,
     unique: true,
     minLength: 7,
     maxLength: 7,
+    sparse: true,
   },
 });
 

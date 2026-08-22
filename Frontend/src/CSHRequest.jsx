@@ -166,10 +166,10 @@ const CSHRequest = () => {
                   type="number"
                   min="0"
                   placeholder="e.g., 3, 5"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white  not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
                 ></input>
                 <span className="text-xs dark:text-white/70">
-                  Enter the number of requested hours.
+                  Enter the number of requested hours. 
                 </span>
               </div>
 
@@ -222,23 +222,24 @@ const CSHRequest = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white text-sm not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500 resize-none"
                 />
               </div>
-
+                  <div></div>
               <div
                 onClick={() =>
                   inputCD &&
                   toast.error("Please wait 10 seconds before submitting again.")
                 }
+                className="w-full flex justify-end"
               >
                 <button
                   disabled={inputCD}
-                  className={`w-45 flex justify-center items-center gap-3 text-sm font-medium py-2 rounded-md transition duration-300 
+                  className={`w-45 flex justify-center items-center text-sm font-medium py-2 rounded-md transition duration-300
                   ${inputCD ? "bg-gray-400 cursor-not-allowed text-gray-200" : "bg-blue-600 hover:bg-blue-700 text-white"}
                   `}
                 >
                   Submit Request
                 </button>
               </div>
-            </div>
+            </div> 
           </form>
 
           <div className="mt-4 ml-3 p-5 gap-3 grow bg-[#e1e4e8] rounded-2xl shadow-lg dark:bg-[#161a22] dark:text-white">

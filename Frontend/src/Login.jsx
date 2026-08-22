@@ -2,13 +2,14 @@ import React from "react";
 import axios from "axios";
 import { backendUrl } from "./App";
 import { toast } from "react-toastify";
+import { GoogleLogin } from "@react-oauth/google";
 import "react-toastify/dist/ReactToastify.css";
 
 const Login = ({ setToken, setAdToken, setTrToken }) => {
   const [currentState, setCurrentState] = React.useState("Login");
   const [name, setName] = React.useState("");
   const [NLemail, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("")
+  const [password, setPassword] = React.useState("");
 
   const formHandler = async (event) => {
     event.preventDefault();
@@ -25,7 +26,7 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
           toast.success("Account created successfully!");
           localStorage.setItem("userId", response.data.userId);
           localStorage.setItem("userName", response.data.fetchname);
-          window.location.reload()
+          window.location.reload();
         } else if (response.data.message === "User already exists") {
           toast.error("User already exists. Please login instead.");
         } else if (response.data.message === "Invalid email") {
@@ -63,9 +64,9 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
             }
 
             if (response.data.message) {
-              toast.success(response.data.message)
+              toast.success(response.data.message);
             }
-            window.location.reload()
+            window.location.reload();
           } catch (error) {
             console.error(error);
           }
@@ -80,6 +81,45 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
     } catch (error) {
       console.error("Error during authentication:", error);
       toast.error(error.message);
+    }
+  };
+
+  const handleGoogleAuth = async (credentials) => {
+    try {
+      const response = await axios.post(backendUrl + "/api/user/oauthlogin", {
+        OAuthtoken: credentials.credential,
+      });
+
+      if (response.data.success) {
+        const { token, user } = response.data;
+
+        localStorage.setItem("userId", user.id);
+        localStorage.setItem("userName", user.name);
+        if (user.avatarUrl) {
+          localStorage.setItem("userAvatar", user.avatarUrl);
+        }
+        try {
+          const extraCheck = await axios.post(
+            backendUrl + "/api/user/extracheck",
+            { userId: user.id },
+          );
+          if (extraCheck.data.adtoken) {
+            setAdToken(extraCheck.data.adtoken);
+          } else if (extraCheck.data.trtoken) {
+            setTrToken(extraCheck.data.trtoken);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+
+        setToken(token)
+        toast.success("Google Sign-In successful!");
+        window.location.replace("/")
+      } else {
+        toast.error(response.data.message || "Google authentication failed.")
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -121,6 +161,18 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
           required
           className="w-full px-4 py-3 border border-gray-300 rounded-md not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
         />
+        <div className="flex flex-col items-center justify-center gap-3">
+          <div className="w-full flex items-center justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleAuth}
+              onError={() => toast.error("Google Sign-In failed")}
+              theme="outline"
+              size="large"
+              shape="rectangular"
+              text="continue_with"
+            />
+          </div>
+        </div>
         <div className="flex justify-between text-sm text-blue-600 dark:text-blue-400">
           <p className="cursor-pointer hover:underline">Forgot password</p>
           {currentState === "Login" ? (

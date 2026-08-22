@@ -121,7 +121,7 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-3 mt-4">
-          <div className="rounded-xl bg-gray-200 p-4 shadow-sm dark:bg-[#161a22] shadow-white/30">
+          <div className="rounded-xl bg-gray-200 p-4 dark:bg-[#161a22]">
             <div className="flex items-center space-x-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                 <Clock className="h-9 w-9" />
@@ -144,7 +144,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="rounded-xl bg-gray-200 p-4 shadow-sm dark:bg-[#161a22] shadow-white/30">
+          <div className="rounded-xl bg-gray-200 p-4 dark:bg-[#161a22]">
             <div className="flex items-center space-x-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
                 <CircleCheckBig className="h-9 w-9" />
@@ -168,7 +168,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="rounded-xl bg-gray-200 p-4 shadow-sm dark:bg-[#161a22] shadow-white/30">
+          <div className="rounded-xl bg-gray-200 p-4 dark:bg-[#161a22]">
             <div className="flex items-center space-x-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-950 dark:text-yellow-400">
                 <ClipboardClock className="h-9 w-9" />

@@ -1,9 +1,9 @@
 /**
- *      _____                __          ___________ __  ______             __          
+ *      _____                __          ___________ __  ______             __
  *     / ___/__  __ _  ___  / /____ __  / ___/ __/ // / /_  __/______ _____/ /_____ ____
  *    / /__/ _ \/  ' \/ _ \/ / -_) \ / / /___\ \/ _  /   / / / __/ _ `/ __/  '_/ -_) __/
- *    \___/\___/_/_/_/ .__/_/\__/_\_\  \___/___/_//_/   /_/ /_/  \_,_/\__/_/\_\\__/_/   
- *                  /_/                                                                 
+ *    \___/\___/_/_/_/ .__/_/\__/_\_\  \___/___/_//_/   /_/ /_/  \_,_/\__/_/\_\\__/_/
+ *                  /_/
  */
 import React from "react";
 import Login from "./Login";
@@ -11,10 +11,11 @@ import Home from "./Home";
 import Admin from "./Admin";
 import CSHRequest from "./CSHRequest";
 import CSHPanel from "./CSHPanel";
-import Notfound from "./404"
-import { useAutoDarkDetect } from "./misc";
+import Notfound from "./404";
 import DashboardSide from "./DashboardSide";
+import { useAutoDarkDetect } from "./misc";
 import { ToastContainer } from "react-toastify";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -25,6 +26,7 @@ import {
 } from "react-router";
 
 export const backendUrl = "http://localhost:4000";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 const ProtectedLink = () => {
   const token = localStorage.getItem("token");
@@ -111,7 +113,6 @@ const App = () => {
               />
             }
           />
-          
         </Route>
 
         <Route element={<ProtectedLink />}>
@@ -140,19 +141,18 @@ const App = () => {
           </Route>
         </Route>
 
-        <Route
-          path="*"
-          element={<Notfound/>}
-        />
+        <Route path="*" element={<Notfound />} />
       </Route>,
     ),
   );
 
   return (
-    <div>
-      <ToastContainer theme={isDark ? "dark" : "light"} />
-      <RouterProvider router={router} />
-    </div>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div>
+        <ToastContainer theme={isDark ? "dark" : "light"} />
+        <RouterProvider router={router} />
+      </div>
+    </GoogleOAuthProvider>
   );
 };
 

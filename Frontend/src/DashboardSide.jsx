@@ -70,7 +70,7 @@ const DashboardSide = () => {
                 </div>
                 <button
                   onClick={() => setlogoutOpen(false)}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800/60 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800/60 outline-none transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950"
                 >
                   <X />
                 </button>
@@ -79,7 +79,7 @@ const DashboardSide = () => {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <button
                     onClick={() => setlogoutOpen(false)}
-                    className="inline-flex h-10 w-full shrink-0 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 disabled:cursor-not-allowed disabled:opacity-60 bg-white dark:bg-black/20 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+                    className="inline-flex h-10 w-full shrink-0 items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 disabled:cursor-not-allowed disabled:opacity-60 bg-white dark:bg-black/20 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   >
                     Go back
                   </button>
@@ -89,7 +89,7 @@ const DashboardSide = () => {
                       sessionStorage.clear();
                       window.location.reload();
                     }}
-                    className="inline-flex h-10 min-h-10 w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 disabled:cursor-not-allowed disabled:opacity-60 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-800 text-white border border-red-700 dark:border-red-500 shadow-sm"
+                    className="inline-flex h-10 min-h-10 w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 disabled:cursor-not-allowed disabled:opacity-60 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-800  text-white shadow-sm"
                   >
                     Sign out
                   </button>
@@ -146,7 +146,7 @@ const DashboardSide = () => {
 
               <button
                 onClick={() => setlogoutOpen(true)}
-                className="flex min-h-10 w-full items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white dark:text-white  bg-red-700 hover:bg-red-800 dark:hover:bg-red-950/50 transition-colors "
+                className="flex min-h-10 w-full items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm font-medium outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e1e4e8] dark:focus-visible:ring-offset-[#161a22] text-white bg-red-700 hover:bg-red-800 dark:hover:bg-red-800 transition-colors"
               >
                 <LogOutIcon className="p-0.5" />
                 Sign Out

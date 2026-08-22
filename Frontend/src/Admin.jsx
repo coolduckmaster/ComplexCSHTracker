@@ -3,7 +3,7 @@ import React from "react";
 import { backendUrl } from "./App";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 
 const api = axios.create();
 
@@ -19,6 +19,8 @@ api.interceptors.request.use((config) => {
 const Admin = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [desStrg, setDesStrg] = React.useState(true);
+  const [hiddenOW, setHiddenOW] = React.useState(true);
+  const [ow, setOW] = React.useState("");
 
   const [search, setSearch] = React.useState("");
 
@@ -86,22 +88,36 @@ const Admin = () => {
     }
   };
 
-  const handleNotes = async (e) => {
+  const handleNotes = async (ow) => {
     const { userId, requestId } = selectedRequest;
-    try {
-      const saveNote = await api.post("approval", {
-        userId,
-        requestId,
-        trnote,
-      });
+    if (!trnote) {
+      return toast.error("Missing teacher's note");
+    }
 
-      if (saveNote.data.success) {
-        toast.success("Successfully noted!");
+    if (CurWordCount <= 250) {
+      try {
+        const saveNote = await api.post("approval", {
+          userId,
+          requestId,
+          trnote,
+          ow,
+        });
+
+        if (saveNote.data.success) {
+          toast.success("Successfully noted!");
+          setHiddenOW(true);
+          setOW("");
+        } else if (saveNote.data.message == "Trnote exist, overwrite") {
+          setHiddenOW(false);
+          toast.info("A note for this request already exist, overwrite?");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error);
+        console.log(trnote);
       }
-    } catch (error) {
-      console.log(error);
-      toast.error(error);
-      console.log(trnote);
+    } else {
+      toast.error("Word limit reached.");
     }
   };
 
@@ -120,6 +136,16 @@ const Admin = () => {
   const indexFirstItem = indexLastItem - PerPage;
   const currentReq = searchRequest.slice(indexFirstItem, indexLastItem);
   const totalPage = Math.ceil(searchRequest.length / PerPage);
+
+  const handleWordCount = (e) => {
+    const val = e.target.value;
+    const word = val.trim().split(/\s+/).filter(Boolean);
+    if (word.length <= 100 || val.length < trnote.length) {
+      setTrNote(val);
+    }
+  };
+
+  const CurWordCount = trnote.trim().split(/\s+/).filter(Boolean).length;
 
   if (isLoading) {
     return (
@@ -221,8 +247,8 @@ const Admin = () => {
                 )}
 
                 {selectedRequest && (
-                  <div className="bits-modal-overlay fixed inset-0 z-9999 bg-darker/80 backdrop-brightness-50">
-                    <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
+                  <div className="bits-modal-overlay fixed inset-0 z-40 bg-darker/80 backdrop-brightness-50">
+                    <div className="bits-modal-content fixed inset-0 z-50 m-auto h-fit w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
                       <div className="dark:bg-[#161a22] dark:text-white px-6">
                         <div className="flex items-center py-4 pb-0 text-base justify-between">
                           <p>Request Details</p>
@@ -278,26 +304,42 @@ const Admin = () => {
                               </div>
                             </div>
                             <div className="p-2 py-4 flex flex-col gap-1 ">
-                              <span>Teacher's note</span>
+                              <div className="grid grid-cols-2 items-center">
+                                <span>Teacher's note</span>
+                                <span
+                                  className={`text-xs flex justify-end ${CurWordCount >= 250 ? "text-red-500 font-semibold" : "text-gray-500 dark:text-gray-400"}`}
+                                >
+                                  {CurWordCount}/250 words
+                                </span>
+                              </div>
                               <textarea
                                 value={trnote}
                                 onChange={(e) => setTrNote(e.target.value)}
                                 placeholder="Send a note to your student regarding this request..."
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white text-sm not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500 resize-none"
                               ></textarea>
-                              <div className="flex justify-end">
-                                <button
-                                  onClick={() => handleNotes()}
-                                  className="w-40 flex border-2 dark:border-blue-500 dark:text-blue-400 border-blue-600 text-blue-500 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                                >
-                                  Save note
-                                </button>
+                              <div className="flex gap-2 mt-2 justify-end">
+                                {!hiddenOW ? (
+                                  <button
+                                    onClick={() => handleNotes("ow")}
+                                    className="w-40 border-2 dark:border-purple-500 dark:text-purple-400 border-purple-600 text-purple-500 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-purple-50 dark:hover:bg-purple-950/30"
+                                  >
+                                    Overwrite
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => handleNotes("")}
+                                    className="w-40 flex border-2 dark:border-blue-500 dark:text-blue-400 border-blue-600 text-blue-500 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                                  >
+                                    Save note
+                                  </button>
+                                )}
                               </div>
                             </div>
-                            <div className="flex justify-end items-center gap-3 w-full p-4">
+                            <div className="flex justify-center items-center gap-3 w-full py-4">
                               <button
                                 onClick={() => handleProcess("Denied")}
-                                className="w-40 flex border-2 dark:border-red-500 dark:text-red-500 border-red-600 text-red-600 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                className="w-40 flex border-2 dark:border-red-500 dark:text-red-500 border-red-600 text-red-600 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:border-white dark:focus-visible:ring-offset-[#161a22] dark:focus-visible:border-[#161a22] hover:bg-red-50 dark:hover:bg-red-950/30"
                               >
                                 <X className="w-4 h-4 shrink-0" />
                                 <span className="leading-none pt-px">
@@ -306,9 +348,9 @@ const Admin = () => {
                               </button>
                               <button
                                 onClick={() => handleProcess("Approved")}
-                                className="w-fit flex border-2 border-green-600 bg-green-600 text-white justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 "
+                                className="w-fit flex border-2 border-green-600 bg-green-600 text-white justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-green-700 hover:border-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#161a22]"
                               >
-                                <X className="w-4 h-4 shrink-0" />
+                                <Check className="w-4 h-4 shrink-0" />
                                 <span className="leading-none pt-px">
                                   Approve Request
                                 </span>
