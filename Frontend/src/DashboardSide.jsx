@@ -1,4 +1,6 @@
 import React from "react";
+import WelcomeBackExtra from "./misc";
+import { Placeholder } from "./App"
 import { NavLink, Outlet } from "react-router";
 import {
   Menu,
@@ -16,6 +18,9 @@ const DashboardSide = () => {
   const [isOpen, setOpen] = React.useState(false); //Open menu yesidfk
   const [logoutOpen, setlogoutOpen] = React.useState(false);
   const storedName = localStorage.getItem("userName") || "User";
+  const storedAvt =
+    localStorage.getItem("userAvatar") ||
+    Placeholder;
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -36,7 +41,6 @@ const DashboardSide = () => {
     assumeRole();
   }, []);
 
-
   const handleMenu = () => {
     if (isOpen) {
       setOpen(false);
@@ -54,6 +58,7 @@ const DashboardSide = () => {
 
   return (
     <div className="bg-gray-100 dark:bg-black">
+      <WelcomeBackExtra/>
       {logoutOpen === false ? null : (
         <div className="bits-modal-overlay fixed inset-0 z-9999 bg-darker/80 backdrop-blur-md">
           <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
@@ -110,14 +115,27 @@ const DashboardSide = () => {
             <aside
               className={`${isOpen ? "bits-modal-content fixed inset-0 z-10000 md:flex md:justify-between" : "hidden md:flex"}  flex h-screen w-55 shrink-0 flex-col justify-between rounded-r-2xl bg-[#e1e4e8] px-3 py-4 text-surface-content shadow-2xl outline-1 outline-black/10 dark:bg-[#161a22] dark:outline-white/14`}
             >
-              <div className="space-y-4">
-                <div className="flex flex-col items-center gap-2 rounded-xl px-2 pb-3 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
-                  <div className="user-info flex flex-col min-h-10 items-center">
-                    <span className="font-medium text-xl">{storedName}</span>
-                    <span className="font-medium dark:text-gray-500 text-sm">{isRole}</span>
+              <div className="space-y-2">
+                <div className="items-center rounded-xl pb-2.5 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
+                  <div className="min-h-10 items-center">
+                    <div className="flex gap-3 justify-center items-center">
+                      <img
+                        src={storedAvt}
+                        loading="lazy"
+                        className="avatar-image-outline aspect-square rounded-full h-9 w-9"
+                      />
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-base">
+                          {storedName}
+                        </span>
+                        <span className="font-medium dark:text-gray-500 text-sm">
+                          {isRole}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <nav className="space-y-1 gap-2 items-center text-md">
+                <nav className="space-y-1 gap-2 items-center text-sm">
                   <NavLink to="/" end className={navLinkClass}>
                     <Home className="p-0.5" />
                     Home

@@ -1,2 +1,41 @@
 @import "tailwindcss";
 
+.picker-dialog-bg {
+    z-index: 99999 !important;
+    background-color: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(4px) !important; 
+}
+
+.picker-dialog {
+    z-index: 100000 !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.picker-dialog iframe{
+    border-radius: 12px !important;
+    display: block;
+}
+
+.dark .picker-dialog-bg {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.dark .picker-dialog {
+    background-color: #1a1a1a !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+}
+
+
+.dark .picker-dialog iframe {
+    filter: invert(0.92) hue-rotate(180deg) brightness(0.95) contrast(0.9) !important;
+}

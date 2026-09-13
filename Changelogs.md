@@ -92,3 +92,30 @@ I am the programmer, *7 hours* of my life, wasted on this website. [Please help 
   - Added backend for Auth
   - Added backend for Overwrite
 ...No other recollection
+
+---- 
+(08/24/26)
++ Frontend edits to "CSHRequest"
+  - Added Google drive functionality.
++ No backend for Google drive 
+
+---- 
+(09/09/26)
++ Frontend edits to "Admin"
+  - Vouch front-backend join
+  - Extra vouch is fix or smth
++ Added "CSHRequestGD"
+  - Split componets so my CSHRequest.jsx isnt so damn long
++ Frontend fixes for "CSHRequest"
++ Backend API edits to "userModels"
+  - Intergration of vouches from Google drive
++ Backend API fixes for "userControllers"
+  - Intergration of Google sign in
+
+---- 
+(09/13/26)
++ Frontend edits for "DashboardSide"
+  - Loading screen?
++ Frontend edits to index.html
+  - did something
++ Frontend edits for "Admin"

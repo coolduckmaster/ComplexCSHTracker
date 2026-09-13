@@ -7,20 +7,25 @@
     <title>Complex CSH Tracker</title>
     <script>
       (function () {
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
         if (isDark) {
-          document.documentElement.classList.add('dark');
-          document.documentElement.style.backgroundColor = '#000'; 
+           document.documentElement.classList.add("dark");
+          document.documentElement.style.backgroundColor = "#000";
         } else {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.style.backgroundColor = '#f8fafc';
+          document.documentElement.classList.remove("dark");
+          document.documentElement.style.backgroundColor = "#f8fafc";
         }
       })();
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+     
+    </div>
     <script type="module" src="/src/main.jsx"></script>
-    <script src="https://google.com" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </body>
 </html>

@@ -1,9 +1,17 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import { backendUrl } from "./App";
+import { backendUrl, Placeholder } from "./App";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Check, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Paperclip,
+  Search,
+  X,
+} from "lucide-react";
 
 const api = axios.create();
 
@@ -30,10 +38,12 @@ const Admin = () => {
   const [trnote, setTrNote] = React.useState("");
 
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [showExtra, setShowExtra] = React.useState(false);
 
   React.useEffect(() => {
     // eslint-disable-next-line react-hooks/immutability
     fetchRequests();
+    
   }, []);
 
   const fetchRequests = async () => {
@@ -121,6 +131,42 @@ const Admin = () => {
     }
   };
 
+  const handleVouchArray = (vouchZeInput) => {
+    if (!vouchZeInput) return [];
+
+    if (Array.isArray(vouchZeInput)) {
+      return vouchZeInput.map((item, index) => {
+        if (typeof item === "string") {
+          return { id: index, name: `Attachment ${index + 1}`, url: item };
+        }
+        return {
+          id: item.id || index,
+          name: item.name || `Attachment ${index + 1}`,
+          url: item.url || "#",
+          sizeBytes: item.sizeBytes || null,
+          mimeType: item.mimeType || "",
+        };
+      });
+    }
+
+    if (typeof vouchZeInput === "string") {
+      try {
+        const parsed = JSON.parse(vouchZeInput);
+        if (Array.isArray(parsed)) return handleVouchArray(parsed);
+      } catch (e) {
+        return vouchZeInput
+          .split(",")
+          .map((url, index) => ({
+            id: index,
+            name: `Attachment ${index + 1}`,
+            url: url.trim(),
+          }))
+          .filter((item) => item.url);
+      }
+    }
+    return [];
+  };
+
   const searchRequest = requests.filter((item) => {
     const searchQ = search.toLowerCase().trim();
     if (!searchQ) return true;
@@ -157,6 +203,7 @@ const Admin = () => {
 
   return (
     <div>
+      
       <div className="w-full min-w-0  pl-9 pr-9 pt-16 lg:pt-9">
         <div className="mb-2 sm:mb-2 space-y-1">
           <p className="text-base text-gray-500 dark:text-gray-400 italic font-mono">
@@ -237,8 +284,21 @@ const Admin = () => {
                           <span className="text-xs text-gray-200 ">
                             {new Date(item.submittedAt).toLocaleString()}
                           </span>
-                          <span className="text-xs text-gray-200 ">
-                            {item.vouch}
+                          <span className="text-xs">
+                            {(() => {
+                              const files = handleVouchArray(item.vouch);
+                              if (files.length === 0)
+                                return (
+                                  <span className="text-gray-400">None</span>
+                                );
+                              return (
+                                <span className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
+                                  <Paperclip className="w-3 h-3" />
+                                  {files.length} file
+                                  {files.length > 1 ? "s" : ""}
+                                </span>
+                              );
+                            })()}
                           </span>
                         </div>
                       </div>
@@ -261,19 +321,30 @@ const Admin = () => {
                         </div>
                         <div>
                           <div className="divide-y divide-dotted divide-gray-500">
-                            <div className="flex flex-col text-sm py-4">
-                              <p className="flex justify-between">
-                                <span>{selectedRequest.userName}</span>
-                                <span>Submitted At</span>
-                              </p>
-                              <p className="flex justify-between dark:text-gray-400">
-                                <span>{selectedRequest.grade}</span>
-                                <span>
-                                  {new Date(
-                                    selectedRequest.submittedAt,
-                                  ).toLocaleString()}
-                                </span>
-                              </p>
+                            <div className="flex items-center gap-3 text-sm py-4">
+                              <img
+                                src={
+                                  selectedRequest.avatarUrl ||
+                                  Placeholder
+                                }
+                                loading="lazy"
+                                className="avatar-image-outline aspect-square rounded-full h-9 w-9"
+                              />
+                              <div className="flex-1">
+                                <p className="flex justify-between">
+                                  <span>{selectedRequest.userName}</span>
+                                  <span>Submitted At</span>
+                                </p>
+
+                                <p className="flex justify-between dark:text-gray-400">
+                                  <span>{selectedRequest.grade}</span>
+                                  <span>
+                                    {new Date(
+                                      selectedRequest.submittedAt,
+                                    ).toLocaleString()}
+                                  </span>
+                                </p>
+                              </div>
                             </div>
                             <div className="grid grid-cols-2 items-start">
                               <div className="flex flex-col items-start py-4 text-sm gap-3 dark:text-gray-400">
@@ -294,7 +365,88 @@ const Admin = () => {
                                   <span>
                                     {selectedRequest.requestHours} hrs
                                   </span>
-                                  <span>{selectedRequest.vouch}</span>
+                                  <div className="w-full">
+                                    {(() => {
+                                      const files = handleVouchArray(
+                                        selectedRequest.vouch,
+                                      );
+                                      if (files.length == 0) {
+                                        return (
+                                          <span className="text-xs text-gray-400">
+                                            No documents attached
+                                          </span>
+                                        );
+                                      }
+
+                                      const firstFile = files[0];
+                                      const remainingFile = files.slice(1);
+
+                                      return (
+                                        <div className="flex items-center gap-2 text-xs w-full max-w-xs">
+                                          <a
+                                            href={firstFile.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline truncate"
+                                          >
+                                            <Paperclip className="w-3.5 h-3.5 shrink-0" />
+                                            <span className="truncate">
+                                              {firstFile.name}
+                                            </span>
+                                          </a>
+
+                                          {remainingFile.length > 0 && (
+                                            <button
+                                              type="button"
+                                              onClick={() => setShowExtra(true)}
+                                              className="shrink-0 font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 px-1.5 py-0.5 rounded transition"
+                                            >
+                                              +{remainingFile.length} more
+                                            </button>
+                                          )}
+                                          {showExtra && (
+                                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                                              <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-lg shadow-lg max-w-sm w-full p-4 relative flex flex-col gap-1">
+                                                <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 flex items-center justify-between">
+                                                    <span>
+                                                      Attached files (
+                                                      {files.length})
+                                                    </span>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() =>
+                                                        setShowExtra(false)
+                                                      }
+                                                      className="text-red-500 hover:text-red-600/80 dark:hover:bg-white/10 rounded"
+                                                    >
+                                                      <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                                <div className="flex flex-col items-start py-2 border-b border-t dark:border-gray-800">
+                                                  <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                                                    {files.map((file) => (
+                                                      <a
+                                                        key={file.id}
+                                                        href={file.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 hover:underline"
+                                                      >
+                                                        <Paperclip className="w-3.5 h-3.5 shrink-0" />
+                                                        <span className="truncate">
+                                                          {file.name}
+                                                        </span>
+                                                      </a>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
                                   <div className="max-h-24 overflow-y-auto pr-1 scrollbar-thin">
                                     <span className="text-xs">
                                       {selectedRequest.description}

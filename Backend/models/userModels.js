@@ -91,7 +91,7 @@ const CSHhistory = new mongoose.Schema({
   },
 
   vouch: {
-    type: String,
+    type: Array,
     required: true,
   },
 

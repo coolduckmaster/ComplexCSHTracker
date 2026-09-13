@@ -279,6 +279,7 @@ const getPendingCSH = async (req, res) => {
         $project: {
           _id: 0,
           requestId: "$history._id",
+          avatarUrl: "$user.avatarUrl",
           userId: "$user._id",
           userName: "$user.name",
           grade: "$user.grade",
