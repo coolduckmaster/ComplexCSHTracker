@@ -11,6 +11,7 @@ import {
   getPendingCSH,
   approvedenyCSH,
   loginOauth,
+  getCSHHistory,
   
 } from "../controllers/userControllers.js";
 
@@ -22,6 +23,7 @@ router.post("/oauthlogin", loginOauth)
 router.post("/onboarding", onboarding);
 
 router.post("/csh/requestcheck", authwareLean, requestHandle)
+router.post("/csh/fetchuserreq", authwareLean, getCSHHistory)
 router.post("/csh/check", authwareLean, checkCSH);
 router.post("/csh/register",  registerCSH);
 router.post("/csh/approval", authware, approvedenyCSH)

@@ -1,15 +1,16 @@
 import React from "react";
-import WelcomeBackExtra from "./misc";
-import { Placeholder } from "./App"
+import { WelcomeBackExtra } from "./misc";
+import { Placeholder } from "./App";
 import { NavLink, Outlet } from "react-router";
 import {
   Menu,
   X,
   Home,
   ClipboardEdit,
+  ClipboardCheck,
+  ClipboardClock,
   LogOutIcon,
   ShieldCog,
-  FileText,
 } from "lucide-react";
 
 const DashboardSide = () => {
@@ -18,9 +19,7 @@ const DashboardSide = () => {
   const [isOpen, setOpen] = React.useState(false); //Open menu yesidfk
   const [logoutOpen, setlogoutOpen] = React.useState(false);
   const storedName = localStorage.getItem("userName") || "User";
-  const storedAvt =
-    localStorage.getItem("userAvatar") ||
-    Placeholder;
+  const storedAvt = localStorage.getItem("userAvatar") || Placeholder;
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -58,7 +57,7 @@ const DashboardSide = () => {
 
   return (
     <div className="bg-gray-100 dark:bg-black">
-      <WelcomeBackExtra/>
+      <WelcomeBackExtra />
       {logoutOpen === false ? null : (
         <div className="bits-modal-overlay fixed inset-0 z-9999 bg-darker/80 backdrop-blur-md">
           <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
@@ -145,17 +144,25 @@ const DashboardSide = () => {
                     <ClipboardEdit className="p-0.5" />
                     Request
                   </NavLink>
-
+                  <NavLink to="/history" end className={navLinkClass}>
+                    <ClipboardClock className="p-0.5" />
+                    History
+                  </NavLink>
+                  {isRole === "Admin" && (
+                    <NavLink to="/approval" className={navLinkClass}>
+                      <ClipboardCheck className="p-0.5" />
+                      Approval
+                    </NavLink>
+                  )}
                   {isRole === "Admin" && (
                     <NavLink to="/admin" end className={navLinkClass}>
                       <ShieldCog className="p-0.5" />
                       Admin
                     </NavLink>
                   )}
-
                   {isRole === "Teacher" && (
                     <NavLink to="/approval" className={navLinkClass}>
-                      <FileText className="p-0.5" />
+                      <ClipboardCheck className="p-0.5" />
                       Approval Panel
                     </NavLink>
                   )}

@@ -1,6 +1,7 @@
 import vaildator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import { userModels, CSHModel, extrasModels } from "../models/userModels.js";
 import { OAuth2Client } from "google-auth-library";
 
@@ -91,27 +92,26 @@ const loginOauth = async (req, res) => {
     });
     const payload = verify.getPayload();
     if (!payload.email_verified) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Google account email is not verified!",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Google account email is not verified!",
+      });
     }
     const { sub: googleId, email, name, picture } = payload;
     let user = await userModels.findOne({ $or: [{ googleId }, { email }] });
 
     if (!user) {
-      const randomPassword = Math.random().toString(36).slice(-8) + Date.now().toString();
+      const randomPassword =
+        Math.random().toString(36).slice(-8) + Date.now().toString();
       const salt = await bcrypt.genSalt(10);
-      const hashedRandomPassword = await bcrypt.hash(randomPassword, salt)
+      const hashedRandomPassword = await bcrypt.hash(randomPassword, salt);
 
       user = await userModels.create({
         googleId,
         email,
         name,
         password: hashedRandomPassword,
-        avatarUrl: picture  || "",
+        avatarUrl: picture || "",
       });
     } else {
       let amiupdate = false;
@@ -119,7 +119,7 @@ const loginOauth = async (req, res) => {
         user.googleId = googleId;
         amiupdate = true;
       }
-       if (picture && user.avatarUrl !== picture) {
+      if (picture && user.avatarUrl !== picture) {
         user.avatarUrl = picture;
         amiupdate = true;
       }
@@ -143,7 +143,12 @@ const loginOauth = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false, message: "Internal server error during Google Auth" });
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error during Google Auth",
+      });
   }
 };
 
@@ -260,6 +265,58 @@ const onboarding = async (req, res) => {
   }
 };
 
+const getCSHHistory = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) {
+      return res.json({ success: false, message: "User ID is required." });
+    }
+
+    const getAllReq = await CSHModel.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      { $unwind: "$history" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { "history.submittedAt": 1 } },
+      {
+        $project: {
+          _id: 0,
+          requestId: "$history._id",
+          activityName: "$history.activityName",
+          requestHours: "$history.requestHours",
+          dateofActivity: "$history.dateofActivity",
+          status: "$history.status",
+          vouch: "$history.vouch",
+          submittedAt: "$history.submittedAt",
+          reviewOn: "$history.reviewOn",
+          description: "$history.description",
+          trnote: "$history.trnote",
+        },
+      },
+    ]);
+
+    return res.json({
+      success: true,
+      count: getAllReq.length,
+      data: getAllReq,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({ success: false, message: "Internal Server Error" });
+  }
+};
+
 const getPendingCSH = async (req, res) => {
   try {
     const getPendingReq = await CSHModel.aggregate([
@@ -339,7 +396,10 @@ const approvedenyCSH = async (req, res) => {
             "history._id": requestId,
           },
           {
-            $set: { "history.$.trnote": trnote },
+            $set: {
+              "history.$.trnote": trnote,
+              "history.$.reviewOn": new Date().toISOString(),
+            },
           },
           { new: true },
         );
@@ -385,7 +445,7 @@ const approvedenyCSH = async (req, res) => {
 
     if (!updateCSH) {
       return res.json({
-        sucess: false,
+        success: false,
         message: "Request was already processed, status is no longer pending.",
       });
     }
@@ -547,6 +607,7 @@ export {
   rolesCheck,
   checkCSH,
   requestHandle,
+  getCSHHistory,
   getPendingCSH,
   approvedenyCSH,
 };

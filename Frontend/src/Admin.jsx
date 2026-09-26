@@ -1,554 +1,379 @@
-/* eslint-disable no-unused-vars */
 import React from "react";
-import { backendUrl, Placeholder } from "./App";
 import axios from "axios";
+import { ZaHourRangePick } from "./misc";
 import { toast } from "react-toastify";
+import { backendUrl } from "./App";
 import {
-  Check,
+  ChevronDown,
+  ChevronUp,
+  CalendarDays,
+  Search,
+  SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
-  Paperclip,
-  Search,
-  X,
 } from "lucide-react";
 
-const api = axios.create();
-
-api.interceptors.request.use((config) => {
-  config.baseURL = backendUrl + "/api/user/csh/";
-  const token = localStorage.getItem("adtoken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+axios.interceptors.request.use((config) => {
+  config.baseURL = `${backendUrl}/ap/user/`;
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+
 const Admin = () => {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [desStrg, setDesStrg] = React.useState(true);
-  const [hiddenOW, setHiddenOW] = React.useState(true);
-  const [ow, setOW] = React.useState("");
-
-  const [search, setSearch] = React.useState("");
-
+  const [filter, setFilter] = React.useState("All");
   const [requests, setRequests] = React.useState([]);
   const [selectedRequest, setSelectedRequest] = React.useState(null);
-  const [processingId, setProccessingId] = React.useState(null);
-  const [trnote, setTrNote] = React.useState("");
 
+  const [showRange, setShowRange] = React.useState(false);
+  const [showMore, setShowMore] = React.useState(false);
+  const [sortBy, setSortBy] = React.useState("submittedAt");
+  const [sortOrder, setSortOrder] = React.useState("desc");
+
+  const [startHour, setStartHour] = React.useState("");
+  const [endHour, setEndHour] = React.useState("");
+  const [startDate, setStartDate] = React.useState("");
+  const [endDate, setEndDate] = React.useState("");
+
+  const [search, setSearch] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
-  const [showExtra, setShowExtra] = React.useState(false);
 
   React.useEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
-    fetchRequests();
-    
-  }, []);
-
-  const fetchRequests = async () => {
-    try {
-      const { data: FRdata } = await api.get("fetchpendingreq");
-      if (FRdata?.success && Array.isArray(FRdata.data)) {
-        setRequests(FRdata.data);
-      } else {
-        toast.error("Invaild Token! Returning to login..");
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.replace("/");
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleProcess = async (status) => {
-    const { userId, requestId } = selectedRequest;
-    if (!selectedRequest) return;
-    setProccessingId(requestId);
-
-    try {
-      const { data: HPdata } = await api.post("approval", {
-        userId,
-        requestId,
-        status,
-      });
-
-      if (HPdata.success) {
-        const updatedList = requests.filter((r) => r.requestId !== requestId);
-        setRequests(updatedList);
-        setSelectedRequest(updatedList.length > 0 ? updatedList[0] : null);
-        toast.success(HPdata.message);
-        if (
-          (currentPage - 1) * PerPage >= updatedList.length &&
-          currentPage > 1
-        ) {
-          setCurrentPage((prev) => prev - 1);
-        }
-      } else {
-        console.log(HPdata.message);
-        toast.error(HPdata.message);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setProccessingId(null);
-    }
-  };
-
-  const handleNotes = async (ow) => {
-    const { userId, requestId } = selectedRequest;
-    if (!trnote) {
-      return toast.error("Missing teacher's note");
-    }
-
-    if (CurWordCount <= 250) {
+    const fetchRequests = async () => {
       try {
-        const saveNote = await api.post("approval", {
-          userId,
-          requestId,
-          trnote,
-          ow,
-        });
-
-        if (saveNote.data.success) {
-          toast.success("Successfully noted!");
-          setHiddenOW(true);
-          setOW("");
-        } else if (saveNote.data.message == "Trnote exist, overwrite") {
-          setHiddenOW(false);
-          toast.info("A note for this request already exist, overwrite?");
+        const userId = localStorage.getItem("userId");
+        const { data } = await axios.post("/csh/fetchuserreq", { userId });
+        if (data?.success && Array.isArray(data.data)) {
+          setRequests(data.data);
+        } else {
+          toast.error("Invalid Token! Returning to login..");
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.replace("/");
         }
       } catch (error) {
-        console.log(error);
-        toast.error(error);
-        console.log(trnote);
+        console.error(error);
+      } finally {
+        setIsLoading(false);
       }
-    } else {
-      toast.error("Word limit reached.");
-    }
+    };
+    fetchRequests();
+  }, []);
+
+  const zaDateRangeHelper = (itemDate, start, end) => {
+    if (!start && !end) return true;
+    if (!itemDate) return false;
+    const itemTime = new Date(itemDate).getTime();
+    if (start && itemTime < new Date(start).setHours(0, 0, 0, 0)) return false;
+    if (end && itemTime > new Date(end).setHours(23, 59, 59, 999)) return false;
+    return true;
   };
 
-  const handleVouchArray = (vouchZeInput) => {
-    if (!vouchZeInput) return [];
-
-    if (Array.isArray(vouchZeInput)) {
-      return vouchZeInput.map((item, index) => {
-        if (typeof item === "string") {
-          return { id: index, name: `Attachment ${index + 1}`, url: item };
-        }
-        return {
-          id: item.id || index,
-          name: item.name || `Attachment ${index + 1}`,
-          url: item.url || "#",
-          sizeBytes: item.sizeBytes || null,
-          mimeType: item.mimeType || "",
-        };
-      });
-    }
-
-    if (typeof vouchZeInput === "string") {
-      try {
-        const parsed = JSON.parse(vouchZeInput);
-        if (Array.isArray(parsed)) return handleVouchArray(parsed);
-      } catch (e) {
-        return vouchZeInput
-          .split(",")
-          .map((url, index) => ({
-            id: index,
-            name: `Attachment ${index + 1}`,
-            url: url.trim(),
-          }))
-          .filter((item) => item.url);
-      }
-    }
-    return [];
+  const zaHourRangeHelper = (itemHours, start, end) => {
+    if (start === "" && end === "") return true;
+    const hours = Number(itemHours);
+    if (isNaN(hours)) return false;
+    const min = start !== "" ? Number(start) : 0;
+    const max = end !== "" ? Number(end) : 80;
+    return hours >= min && hours <= max;
   };
 
-  const searchRequest = requests.filter((item) => {
-    const searchQ = search.toLowerCase().trim();
-    if (!searchQ) return true;
+  const searchLog = requests
+    .filter((item) => {
+      const searchQ = search.toLowerCase().trim();
+      const activity = String(item.activityName || "").toLowerCase();
+      const matchSearch = !searchQ || activity.includes(searchQ);
+      const searchFilter =
+        filter === "All" || item.status?.toLowerCase() === filter.toLowerCase();
+      return (
+        searchFilter &&
+        matchSearch &&
+        zaDateRangeHelper(item.submittedAt, startDate, endDate) &&
+        zaHourRangeHelper(item.requestHours, startHour, endHour)
+      );
+    })
+    .sort((a, b) => {
+      let valA = a[sortBy];
+      let valB = b[sortBy];
 
-    const name = String(item.userName || "").toLowerCase();
-    const activity = String(item.activityName || "").toLowerCase();
+      if (sortBy === "submittedAt" || sortBy === "dateofActivity") {
+        valA = valA ? new Date(valA).getTime() : 0;
+        valB = valB ? new Date(valB).getTime() : 0;
+      } else if (sortBy === "requestHours") {
+        valA = Number(valA) || 0;
+        valB = Number(valB) || 0;
+      } else {
+        const strA = String(valA || "").toLowerCase();
+        const strB = String(valB || "").toLowerCase();
+        return sortOrder === "asc"
+          ? strA.localeCompare(strB)
+          : strB.localeCompare(strA);
+      }
 
-    return name.includes(searchQ) || activity.includes(searchQ);
-  });
+      return sortOrder === "asc" ? valA - valB : valB - valA;
+    });
 
   const PerPage = 5;
-  const indexLastItem = currentPage * PerPage;
-  const indexFirstItem = indexLastItem - PerPage;
-  const currentReq = searchRequest.slice(indexFirstItem, indexLastItem);
-  const totalPage = Math.ceil(searchRequest.length / PerPage);
-
-  const handleWordCount = (e) => {
-    const val = e.target.value;
-    const word = val.trim().split(/\s+/).filter(Boolean);
-    if (word.length <= 100 || val.length < trnote.length) {
-      setTrNote(val);
-    }
-  };
-
-  const CurWordCount = trnote.trim().split(/\s+/).filter(Boolean).length;
+  const currentReq = searchLog.slice(
+    (currentPage - 1) * PerPage,
+    currentPage * PerPage,
+  );
+  const totalPage = Math.ceil(searchLog.length / PerPage);
 
   if (isLoading) {
     return (
       <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
-        <p>Loading...</p>
+        <p className="animate-pulse">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div>
-      
-      <div className="w-full min-w-0  pl-9 pr-9 pt-16 lg:pt-9">
-        <div className="mb-2 sm:mb-2 space-y-1">
-          <p className="text-base text-gray-500 dark:text-gray-400 italic font-mono">
-            Complex CSH Tracker
-          </p>
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-2xl lg:text-3xl">
-              Administrative Page
-            </h1>
-          </div>
-          <p className="text-base text-gray-500 dark:text-gray-400 font-mono">
-            Debug, Manage, and Test New Feature
-          </p>
-        </div>
-        <div className="flex flex-col">
-          <div className="w-full mt-2 grow-3 pb-2 p-4 bg-[#e1e4e8] rounded-2xl shadow-lg space-y-2 dark:bg-[#161a22] dark:text-white">
-            <div className="flex justify-between">
-              <p className="text-lg font-semibold">
-                Pending Request (<span>{searchRequest.length || "0"}</span>)
-              </p>
+    <div className="w-full min-w-0 px-4 sm:px-9 pt-16 lg:pt-9">
+      <div className="mb-4 space-y-1">
+        <p className="text-base text-gray-500 dark:text-gray-400 italic font-mono">
+          Complex CSH Tracker
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          Administrative
+        </h1>
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 font-mono">
+          Debug, Manage, and Test New Feature
+        </p>
+      </div>
 
-              <div className="flex w-full max-w-sm items-center gap-2">
-                <Search className="w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search by student or activity..."
-                  onChange={(e) => {
-                    setSearch(e.target.value);
+      <div className="flex flex-col gap-3">
+        <div className="flex w-full items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-sm items-center">
+            <input
+              type="text"
+              placeholder="Search activities"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white pl-9 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-400"
+            />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          </div>
+          <button className="flex items-center text-sm font-medium rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200 transition-colors">
+            Export
+          </button>
+        </div>
+
+        <div className="w-full p-2.5 px-4 bg-gray-200/80 rounded-xl shadow-sm dark:bg-[#161a22]/70 dark:text-white border border-gray-300/50 dark:border-gray-800">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sm:items-center">
+            <div className="flex items-center gap-4 text-sm font-medium">
+              {["All", "Approved", "Pending", "Denied"].map((status) => (
+                <button
+                  key={status}
+                  className={`transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
+                    filter === status
+                      ? "text-blue-600 dark:text-blue-400 font-semibold underline"
+                      : "text-gray-600 dark:text-gray-300"
+                  }`}
+                  onClick={() => {
+                    setFilter(status);
                     setCurrentPage(1);
                   }}
-                  className="flex-1 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                ></input>
-              </div>
+                >
+                  {status}
+                </button>
+              ))}
             </div>
 
-            <div>
-              <div className="grid grid-cols-5 items-center w-full px-3.5 py-2 font-mono text-sm text-gray-500 dark:text-gray-400">
-                <span>Student</span>
-                <span>Activity</span>
-                <span>Hours Requested</span>
-                <span>Submitted At</span>
-                <span>Vouch</span>
-              </div>
-              <div className="grid gap-1">
-                {searchRequest.length === 0 ? (
-                  <div className="p-8 text-center text-gray-400 text-sm">
-                    {search
-                      ? "No matching requests found!"
-                      : "No pending request!"}
-                  </div>
-                ) : (
-                  currentReq.map((item) => {
-                    const IamSelected =
-                      selectedRequest?.requestId === item.requestId;
-                    return (
-                      <div
-                        key={item.requestId}
-                        onClick={() => setSelectedRequest(item)}
-                        className={`p-3.5 cursor-pointer transition-colors rounded-lg ${
-                          IamSelected
-                            ? "bg-blue-50/70 dark:bg-gray-700 border-l-4 border-blue-600"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-white/30 dark:bg-gray-800/50"
-                        }`}
-                      >
-                        <div className="grid grid-cols-5 items-center">
-                          <span className="font-mono text-gray-900 text-sm dark font-semibold dark:text-white flex flex-col">
-                            {item.userName}
-                            <span className="font-normal text-xs">
-                              {item.grade}
-                            </span>
-                          </span>
-                          <span className="text-xs text-gray-600 truncate font-medium dark:text-white">
-                            {item.activityName}
-                          </span>
-                          <span className="text-xs font-bold text-blue-600 bg-blue-50 p-1 w-fit rounded">
-                            {item.requestHours} hours
-                          </span>
-                          <span className="text-xs text-gray-200 ">
-                            {new Date(item.submittedAt).toLocaleString()}
-                          </span>
-                          <span className="text-xs">
-                            {(() => {
-                              const files = handleVouchArray(item.vouch);
-                              if (files.length === 0)
-                                return (
-                                  <span className="text-gray-400">None</span>
-                                );
-                              return (
-                                <span className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
-                                  <Paperclip className="w-3 h-3" />
-                                  {files.length} file
-                                  {files.length > 1 ? "s" : ""}
-                                </span>
-                              );
-                            })()}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+            <div className="flex items-center gap-2 text-sm">
+              <div className="relative">
+                <button
+                  className="flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"
+                  onClick={() => {
+                    setShowRange((prev) => !prev);
+                    setShowMore(false);
+                  }}
+                >
+                  <CalendarDays className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  All time
+                  {showRange ? (
+                    <ChevronDown className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-400" />
+                  ) : (
+                    <ChevronUp className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-400" />
+                  )}
+                </button>
 
-                {selectedRequest && (
-                  <div className="bits-modal-overlay fixed inset-0 z-40 bg-darker/80 backdrop-brightness-50">
-                    <div className="bits-modal-content fixed inset-0 z-50 m-auto h-fit w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
-                      <div className="dark:bg-[#161a22] dark:text-white px-6">
-                        <div className="flex items-center py-4 pb-0 text-base justify-between">
-                          <p>Request Details</p>
-                          <button
-                            onClick={() => setSelectedRequest(null)}
-                            className="inline-flex items-center justify-center rounded-lg p-1 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-950 disabled:cursor-not-allowed disabled:opacity-60 dark:text-white/50 hover:bg-gray-100 dark:hover:bg-gray-700 "
-                          >
-                            <X />
-                          </button>
-                        </div>
-                        <div>
-                          <div className="divide-y divide-dotted divide-gray-500">
-                            <div className="flex items-center gap-3 text-sm py-4">
-                              <img
-                                src={
-                                  selectedRequest.avatarUrl ||
-                                  Placeholder
-                                }
-                                loading="lazy"
-                                className="avatar-image-outline aspect-square rounded-full h-9 w-9"
-                              />
-                              <div className="flex-1">
-                                <p className="flex justify-between">
-                                  <span>{selectedRequest.userName}</span>
-                                  <span>Submitted At</span>
-                                </p>
-
-                                <p className="flex justify-between dark:text-gray-400">
-                                  <span>{selectedRequest.grade}</span>
-                                  <span>
-                                    {new Date(
-                                      selectedRequest.submittedAt,
-                                    ).toLocaleString()}
-                                  </span>
-                                </p>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 items-start">
-                              <div className="flex flex-col items-start py-4 text-sm gap-3 dark:text-gray-400">
-                                <span>Activity Name</span>
-                                <span>Date of Activity</span>
-                                <span>Hours Requested</span>
-                                <span>Vouch</span>
-                                <span>Description</span>
-                              </div>
-                              <div className="flex flex-col items-center py-4 text-sm gap-3 dark:text-gray-200 text-left">
-                                <div className="w-full flex flex-col gap-3 items-start">
-                                  <span>{selectedRequest.activityName}</span>
-                                  <span>
-                                    {new Date(
-                                      selectedRequest.dateofActivity,
-                                    ).toLocaleDateString()}
-                                  </span>
-                                  <span>
-                                    {selectedRequest.requestHours} hrs
-                                  </span>
-                                  <div className="w-full">
-                                    {(() => {
-                                      const files = handleVouchArray(
-                                        selectedRequest.vouch,
-                                      );
-                                      if (files.length == 0) {
-                                        return (
-                                          <span className="text-xs text-gray-400">
-                                            No documents attached
-                                          </span>
-                                        );
-                                      }
-
-                                      const firstFile = files[0];
-                                      const remainingFile = files.slice(1);
-
-                                      return (
-                                        <div className="flex items-center gap-2 text-xs w-full max-w-xs">
-                                          <a
-                                            href={firstFile.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline truncate"
-                                          >
-                                            <Paperclip className="w-3.5 h-3.5 shrink-0" />
-                                            <span className="truncate">
-                                              {firstFile.name}
-                                            </span>
-                                          </a>
-
-                                          {remainingFile.length > 0 && (
-                                            <button
-                                              type="button"
-                                              onClick={() => setShowExtra(true)}
-                                              className="shrink-0 font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 px-1.5 py-0.5 rounded transition"
-                                            >
-                                              +{remainingFile.length} more
-                                            </button>
-                                          )}
-                                          {showExtra && (
-                                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                                              <div className="bg-white dark:bg-gray-900 border dark:border-gray-800 rounded-lg shadow-lg max-w-sm w-full p-4 relative flex flex-col gap-1">
-                                                <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 flex items-center justify-between">
-                                                    <span>
-                                                      Attached files (
-                                                      {files.length})
-                                                    </span>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() =>
-                                                        setShowExtra(false)
-                                                      }
-                                                      className="text-red-500 hover:text-red-600/80 dark:hover:bg-white/10 rounded"
-                                                    >
-                                                      <X className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                                <div className="flex flex-col items-start py-2 border-b border-t dark:border-gray-800">
-                                                  <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-                                                    {files.map((file) => (
-                                                      <a
-                                                        key={file.id}
-                                                        href={file.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 hover:underline"
-                                                      >
-                                                        <Paperclip className="w-3.5 h-3.5 shrink-0" />
-                                                        <span className="truncate">
-                                                          {file.name}
-                                                        </span>
-                                                      </a>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    })()}
-                                  </div>
-                                  <div className="max-h-24 overflow-y-auto pr-1 scrollbar-thin">
-                                    <span className="text-xs">
-                                      {selectedRequest.description}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-2 py-4 flex flex-col gap-1 ">
-                              <div className="grid grid-cols-2 items-center">
-                                <span>Teacher's note</span>
-                                <span
-                                  className={`text-xs flex justify-end ${CurWordCount >= 250 ? "text-red-500 font-semibold" : "text-gray-500 dark:text-gray-400"}`}
-                                >
-                                  {CurWordCount}/250 words
-                                </span>
-                              </div>
-                              <textarea
-                                value={trnote}
-                                onChange={(e) => setTrNote(e.target.value)}
-                                placeholder="Send a note to your student regarding this request..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md dark:text-white text-sm not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500 resize-none"
-                              ></textarea>
-                              <div className="flex gap-2 mt-2 justify-end">
-                                {!hiddenOW ? (
-                                  <button
-                                    onClick={() => handleNotes("ow")}
-                                    className="w-40 border-2 dark:border-purple-500 dark:text-purple-400 border-purple-600 text-purple-500 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-purple-50 dark:hover:bg-purple-950/30"
-                                  >
-                                    Overwrite
-                                  </button>
-                                ) : (
-                                  <button
-                                    onClick={() => handleNotes("")}
-                                    className="w-40 flex border-2 dark:border-blue-500 dark:text-blue-400 border-blue-600 text-blue-500 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                                  >
-                                    Save note
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex justify-center items-center gap-3 w-full py-4">
-                              <button
-                                onClick={() => handleProcess("Denied")}
-                                className="w-40 flex border-2 dark:border-red-500 dark:text-red-500 border-red-600 text-red-600 justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:border-white dark:focus-visible:ring-offset-[#161a22] dark:focus-visible:border-[#161a22] hover:bg-red-50 dark:hover:bg-red-950/30"
-                              >
-                                <X className="w-4 h-4 shrink-0" />
-                                <span className="leading-none pt-px">
-                                  Deny Request
-                                </span>
-                              </button>
-                              <button
-                                onClick={() => handleProcess("Approved")}
-                                className="w-fit flex border-2 border-green-600 bg-green-600 text-white justify-center items-center gap-1.5 rounded-xl py-2 px-4 text-sm transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100 hover:bg-green-700 hover:border-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-[#161a22]"
-                              >
-                                <Check className="w-4 h-4 shrink-0" />
-                                <span className="leading-none pt-px">
-                                  Approve Request
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                {showRange && (
+                  <div className="absolute right-0 top-10 z-50 p-4 bg-white dark:bg-[#161a22] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-1.5 min-w-64">
+                    <span className="font-semibold text-xs text-gray-700 dark:text-gray-200 pb-2 border-b border-gray-100 dark:border-gray-700">
+                      Select Range
+                    </span>
+                    <div className="flex flex-col gap-1 text-xs">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        Start Date:
+                      </span>
+                      <input
+                        type="date"
+                        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white"
+                        value={startDate}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                      />
                     </div>
+                    <div className="flex flex-col gap-1 text-xs">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        End Date:
+                      </span>
+                      <input
+                        type="date"
+                        min={startDate}
+                        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white"
+                        value={endDate}
+                        onChange={(e) => {
+                          setEndDate(e.target.value);
+                          setCurrentPage(1);
+                        }}
+                      />
+                    </div>
+                    {(startDate || endDate) && (
+                      <button
+                        onClick={() => {
+                          setStartDate("");
+                          setEndDate("");
+                          setCurrentPage(1);
+                        }}
+                        className="mt-0.5 text-xs text-red-500 hover:underline text-right"
+                      >
+                        Clear Dates
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
 
-              {totalPage > 1 && (
-                <div className="flex items-center justify-between pt-4 mt-2 border-t border-gray-300 dark:border-gray-700">
-                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
-                    Page {currentPage} of {totalPage}
-                  </span>
-
-                  <div className="flex gap-2">
-                    <button
-                      disabled={currentPage === 1}
-                      onClick={() => {
-                        setCurrentPage((prev) => prev - 1);
-                        setSelectedRequest(null);
-                      }}
-                      className="px-3 py-1 text-xs font-semibold rounded-md bg-gray-200 dark:bg-gray-700 transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100"
-                    >
-                      <ChevronLeft />
-                    </button>
-                    <button
-                      disabled={currentPage === totalPage}
-                      onClick={() => {
-                        setCurrentPage((prev) => prev + 1);
-                        setSelectedRequest(null);
-                      }}
-                      className="px-3 py-1 text-xs font-semibold rounded-md bg-gray-200 dark:bg-gray-700 transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.93] motion-reduce:active:scale-100"
-                    >
-                      <ChevronRight />
-                    </button>
-                  </div>
-                </div>
-              )}
+              <div className="relative">
+                <button
+                  className="flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"
+                  onClick={() => {
+                    setShowMore((prev) => !prev);
+                    setShowRange(false);
+                  }}
+                >
+                  <SlidersHorizontal className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  More filter
+                </button>
+                <ZaHourRangePick
+                  showMore={showMore}
+                  startHour={startHour}
+                  setStartHour={setStartHour}
+                  endHour={endHour}
+                  setEndHour={setEndHour}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  sortOrder={sortOrder}
+                  setSortOrder={setSortOrder}
+                />
+              </div>
             </div>
           </div>
         </div>
+
+        <div className="w-full p-4 bg-gray-200/80 rounded-xl shadow-sm dark:bg-[#161a22] dark:text-white border border-gray-300/50 dark:border-gray-800">
+          <div className="grid grid-cols-5 gap-4 text-xs text-gray-500 dark:text-gray-400 tracking-wider px-3 pb-3 border-b border-gray-300/60 dark:border-gray-800 font-mono">
+            <span>Activity</span>
+            <span>Date of Activity</span>
+            <span>Hours</span>
+            <span>Status</span>
+            <span>Submitted on</span>
+          </div>
+          <div className="grid gap-1.5 mt-2">
+            {searchLog.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm italic">
+                {search ? "No matching requests found!" : "No requests!"}
+              </div>
+            ) : (
+              currentReq.map((item) => {
+                const isSelected =
+                  selectedRequest?.requestId === item.requestId;
+                return (
+                  <div
+                    key={item.requestId}
+                    onClick={() => setSelectedRequest(item)}
+                    className={`p-3 cursor-pointer transition-all rounded-lg ${
+                      isSelected
+                        ? "bg-blue-50/90 dark:bg-gray-800/90 border-l-4 border-blue-600 shadow-sm"
+                        : "bg-white/60 dark:bg-gray-800/40 hover:bg-white dark:hover:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700/40"
+                    }`}
+                  >
+                    <div className="grid grid-cols-5 gap-4 items-center">
+                      <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">
+                        {item.activityName || "N/A"}
+                      </span>
+                      <span className="text-xs text-gray-600 dark:text-gray-300">
+                        {item.dateofActivity
+                          ? new Date(item.dateofActivity).toLocaleDateString()
+                          : "N/A"}
+                      </span>
+                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 w-fit rounded-full border border-blue-200 dark:border-blue-800/50">
+                        {item.requestHours} hours
+                      </span>
+                      <span
+                        className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full border w-fit ${
+                          item.status === "Approved"
+                            ? "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/60 border-green-200 dark:border-green-800/50"
+                            : item.status === "Denied"
+                              ? "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/60 border-red-200 dark:border-red-800/50"
+                              : "text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                        }`}
+                      >
+                        {item.status || "Unknown"}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {item.submittedAt
+                          ? new Date(item.submittedAt).toLocaleString()
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {totalPage > 1 && (
+          <div className="flex items-center justify-between pt-4 mt-2 border-t border-gray-200 dark:border-gray-800">
+            <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+              Page {currentPage} of {totalPage}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => {
+                  setCurrentPage((prev) => prev - 1);
+                  setSelectedRequest(null);
+                }}
+                className="px-3 py-1 text-xs font-semibold rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                disabled={currentPage === totalPage}
+                onClick={() => {
+                  setCurrentPage((prev) => prev + 1);
+                  setSelectedRequest(null);
+                }}
+                className="px-3 py-1 text-xs font-semibold rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

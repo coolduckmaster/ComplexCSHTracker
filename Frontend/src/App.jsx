@@ -13,6 +13,7 @@ import CSHRequest from "./CSHRequest";
 import CSHPanel from "./CSHPanel";
 import Notfound from "./404";
 import DashboardSide from "./DashboardSide";
+import CSHHistory from "./CSHHistory";
 import { useAutoDarkDetect } from "./misc";
 import { ToastContainer } from "react-toastify";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -124,11 +125,21 @@ const App = () => {
               path="/requests"
               element={<CSHRequest setToken={setToken} />}
             />
+            <Route
+              path="/history"
+              element={<CSHHistory setToken={setToken} />}
+            />
 
             <Route element={<VeryProtectedLink />}>
               <Route
                 path="/admin"
                 element={<Admin setToken={setToken} setAdToken={setAdToken} />}
+              />
+              <Route
+                path="/approval"
+                element={
+                  <CSHPanel setToken={setToken} setTrToken={setTrToken} />
+                }
               />
             </Route>
 

@@ -1,3 +1,4 @@
+import React from "react";
 import axios from "axios";
 import {
   Clock,
@@ -5,7 +6,6 @@ import {
   ClipboardClock,
   CalendarDays,
 } from "lucide-react";
-import React from "react";
 import { backendUrl } from "./App";
 import { toast } from "react-toastify";
 
@@ -128,7 +128,7 @@ const Dashboard = () => {
               </div>
               <div className="flex flex-col">
                 <p className="font-mono text-base font-medium text-gray-600 dark:text-gray-400">
-                  Total Logged
+                  Total Requested
                 </p>
                 <span className="font-mono text-3xl font-bold text-gray-900 dark:text-white">
                   {cshData.TotalHours}

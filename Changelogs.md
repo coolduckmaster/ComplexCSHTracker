@@ -1,7 +1,7 @@
 ## BIG LINTER UPDATE
-I am the ESLINT, I wasted **3 hours** on javascript errors.
+I am the ESLINT, I wasted **4.9 hours** on javascript errors.
 
-I am the programmer, *7 hours* of my life, wasted on this website. [Please help me, I have 40/384 hours required :( ]
+I am the programmer, *7 hours* of my life *EACH DAY*, wasted on this website. [Please help me, I have 130/320 hours required :( ]
 
 ----
 (8/4/2026)
@@ -119,3 +119,29 @@ I am the programmer, *7 hours* of my life, wasted on this website. [Please help 
 + Frontend edits to index.html
   - did something
 + Frontend edits for "Admin"
+
+----
+(Before 09/26/26)
++ Frontend "CSHHistory"
+  - Temporarily empty
++ Frontend edits to "CSHPanel"
+  - Moved in approval UI from "Admin" testing
+  - Small ui changes
++ Frontend edits to ????
+  - did somethng
+
+---- 
+(09/26/26)
++ Frontend edits to "Admin"
+  - History first version
++ Frontend edits to "misc"
+  - Range picker filter thingy majig
++ Frontend edits to "DashboardSide"
+  - Intergration of history checker mi do
++ Backend API edits to "userControllers"
+  - Intergration of history checker mi do
++ Backend API edits to "userRoutes"
+  - Intergration of history checker mi do
++ Backend API edits to "userModels"
+  - Intergration of history... MAN YOU KNOW
+
