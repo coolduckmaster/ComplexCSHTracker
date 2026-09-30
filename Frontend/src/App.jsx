@@ -26,7 +26,8 @@ import {
   Outlet,
 } from "react-router";
 
-export const backendUrl = "http://localhost:4000";
+export const backendUrltest = "http://localhost:4000";
+export const backendUrl = "https://complex-csh-tracker-backend.vercel.app"
 export const Placeholder = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
   //This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license. Wikimedia.
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
