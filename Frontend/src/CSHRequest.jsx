@@ -92,10 +92,10 @@ const CSHRequest = () => {
   const formHandler = async (event) => {
     event.preventDefault();
 
-    if (vouch.length === 0) {
-      toast.error("Please attach one or more documents");
-      return;
-    }
+    // if (vouch.length === 0) {
+    //   toast.error("Please attach one or more documents");
+    //   return;
+    // }
 
     if (!inputCD) {
       if (CurWordCount <= 100) {
