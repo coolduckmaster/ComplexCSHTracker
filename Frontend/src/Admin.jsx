@@ -1,8 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React from "react";
-import axios from "axios";
-import { ZaHourRangePick } from "./misc";
-import { toast } from "react-toastify";
-import { backendUrl } from "./App";
+import CSHHistoryComp from "./CSHHistoryComp";
+import { ZaHourRangePick, ExportButton } from "./misc";
+
 import {
   ChevronDown,
   ChevronUp,
@@ -11,24 +11,17 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 
-axios.interceptors.request.use((config) => {
-  config.baseURL = `${backendUrl}/ap/user/`;
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-
 const Admin = () => {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [filter, setFilter] = React.useState("All");
   const [requests, setRequests] = React.useState([]);
+  const [filter, setFilter] = React.useState("All");
   const [selectedRequest, setSelectedRequest] = React.useState(null);
 
   const [showRange, setShowRange] = React.useState(false);
   const [showMore, setShowMore] = React.useState(false);
+
   const [sortBy, setSortBy] = React.useState("submittedAt");
   const [sortOrder, setSortOrder] = React.useState("desc");
 
@@ -40,34 +33,21 @@ const Admin = () => {
   const [search, setSearch] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
 
-  React.useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-        const { data } = await axios.post("/csh/fetchuserreq", { userId });
-        if (data?.success && Array.isArray(data.data)) {
-          setRequests(data.data);
-        } else {
-          toast.error("Invalid Token! Returning to login..");
-          localStorage.clear();
-          sessionStorage.clear();
-          window.location.replace("/");
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchRequests();
-  }, []);
-
   const zaDateRangeHelper = (itemDate, start, end) => {
     if (!start && !end) return true;
     if (!itemDate) return false;
     const itemTime = new Date(itemDate).getTime();
-    if (start && itemTime < new Date(start).setHours(0, 0, 0, 0)) return false;
-    if (end && itemTime > new Date(end).setHours(23, 59, 59, 999)) return false;
+
+    if (start) {
+      const startTime = new Date(start).setHours(0, 0, 0, 0);
+      if (itemTime < startTime) return false;
+    }
+
+    if (end) {
+      const endTime = new Date(end).setHours(23, 59, 59, 999);
+      if (itemTime > endTime) return false;
+    }
+
     return true;
   };
 
@@ -85,8 +65,11 @@ const Admin = () => {
       const searchQ = search.toLowerCase().trim();
       const activity = String(item.activityName || "").toLowerCase();
       const matchSearch = !searchQ || activity.includes(searchQ);
+
       const searchFilter =
-        filter === "All" || item.status?.toLowerCase() === filter.toLowerCase();
+        filter === "All" ||
+        item.status?.toLowerCase() === filter.toLowerCase();
+
       return (
         searchFilter &&
         matchSearch &&
@@ -107,6 +90,7 @@ const Admin = () => {
       } else {
         const strA = String(valA || "").toLowerCase();
         const strB = String(valB || "").toLowerCase();
+
         return sortOrder === "asc"
           ? strA.localeCompare(strB)
           : strB.localeCompare(strA);
@@ -116,19 +100,37 @@ const Admin = () => {
     });
 
   const PerPage = 5;
+
+  const totalPage = Math.ceil(searchLog.length / PerPage);
+
   const currentReq = searchLog.slice(
     (currentPage - 1) * PerPage,
     currentPage * PerPage,
   );
-  const totalPage = Math.ceil(searchLog.length / PerPage);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
-        <p className="animate-pulse">Loading...</p>
-      </div>
-    );
-  }
+  React.useEffect(() => {
+    if (totalPage > 0 && currentPage > totalPage) {
+      setCurrentPage(totalPage);
+    }
+
+    if (totalPage === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPage]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+    setSelectedRequest(null);
+  }, [
+    filter,
+    search,
+    startDate,
+    endDate,
+    startHour,
+    endHour,
+    sortBy,
+    sortOrder,
+  ]);
 
   return (
     <div className="w-full min-w-0 px-4 sm:px-9 pt-16 lg:pt-9">
@@ -136,9 +138,11 @@ const Admin = () => {
         <p className="text-base text-gray-500 dark:text-gray-400 italic font-mono">
           Complex CSH Tracker
         </p>
+
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
           Administrative
         </h1>
+
         <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 font-mono">
           Debug, Manage, and Test New Feature
         </p>
@@ -157,19 +161,27 @@ const Admin = () => {
               }}
               className="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white pl-9 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-400"
             />
+
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
-          <button className="flex items-center text-sm font-medium rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200 transition-colors">
-            Export
-          </button>
+
+          <ExportButton>
+            <button
+              type="button"
+              className="flex items-center text-sm font-medium rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200 transition-colors"
+            >
+              Export
+            </button>
+          </ExportButton>
         </div>
 
-        <div className="w-full p-2.5 px-4 bg-gray-200/80 rounded-xl shadow-sm dark:bg-[#161a22]/70 dark:text-white border border-gray-300/50 dark:border-gray-800">
+        <div className="w-full p-2.5 px-4 bg-gray-100 rounded-xl shadow-sm dark:bg-[#161a22]/70 dark:text-white border border-gray-200 dark:border-gray-800">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between sm:items-center">
             <div className="flex items-center gap-4 text-sm font-medium">
               {["All", "Approved", "Pending", "Denied"].map((status) => (
                 <button
                   key={status}
+                  type="button"
                   className={`transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
                     filter === status
                       ? "text-blue-600 dark:text-blue-400 font-semibold underline"
@@ -188,6 +200,7 @@ const Admin = () => {
             <div className="flex items-center gap-2 text-sm">
               <div className="relative">
                 <button
+                  type="button"
                   className="flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"
                   onClick={() => {
                     setShowRange((prev) => !prev);
@@ -197,9 +210,9 @@ const Admin = () => {
                   <CalendarDays className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                   All time
                   {showRange ? (
-                    <ChevronDown className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-400" />
-                  ) : (
                     <ChevronUp className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-400" />
                   )}
                 </button>
 
@@ -208,13 +221,15 @@ const Admin = () => {
                     <span className="font-semibold text-xs text-gray-700 dark:text-gray-200 pb-2 border-b border-gray-100 dark:border-gray-700">
                       Select Range
                     </span>
+
                     <div className="flex flex-col gap-1 text-xs">
                       <span className="text-gray-500 dark:text-gray-400">
                         Start Date:
                       </span>
+
                       <input
                         type="date"
-                        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white"
+                        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white"
                         value={startDate}
                         onChange={(e) => {
                           setStartDate(e.target.value);
@@ -222,14 +237,16 @@ const Admin = () => {
                         }}
                       />
                     </div>
+
                     <div className="flex flex-col gap-1 text-xs">
                       <span className="text-gray-500 dark:text-gray-400">
                         End Date:
                       </span>
+
                       <input
                         type="date"
                         min={startDate}
-                        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white"
+                        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-white dark:bg-gray-800/60 text-gray-900 dark:text-white"
                         value={endDate}
                         onChange={(e) => {
                           setEndDate(e.target.value);
@@ -237,8 +254,10 @@ const Admin = () => {
                         }}
                       />
                     </div>
+
                     {(startDate || endDate) && (
                       <button
+                        type="button"
                         onClick={() => {
                           setStartDate("");
                           setEndDate("");
@@ -255,6 +274,7 @@ const Admin = () => {
 
               <div className="relative">
                 <button
+                  type="button"
                   className="flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"
                   onClick={() => {
                     setShowMore((prev) => !prev);
@@ -264,6 +284,7 @@ const Admin = () => {
                   <SlidersHorizontal className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
                   More filter
                 </button>
+
                 <ZaHourRangePick
                   showMore={showMore}
                   startHour={startHour}
@@ -280,67 +301,105 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="w-full p-4 bg-gray-200/80 rounded-xl shadow-sm dark:bg-[#161a22] dark:text-white border border-gray-300/50 dark:border-gray-800">
-          <div className="grid grid-cols-5 gap-4 text-xs text-gray-500 dark:text-gray-400 tracking-wider px-3 pb-3 border-b border-gray-300/60 dark:border-gray-800 font-mono">
-            <span>Activity</span>
-            <span>Date of Activity</span>
-            <span>Hours</span>
-            <span>Status</span>
-            <span>Submitted on</span>
-          </div>
-          <div className="grid gap-1.5 mt-2">
-            {searchLog.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 dark:text-gray-400 text-sm italic">
-                {search ? "No matching requests found!" : "No requests!"}
-              </div>
-            ) : (
-              currentReq.map((item) => {
-                const isSelected =
-                  selectedRequest?.requestId === item.requestId;
-                return (
-                  <div
-                    key={item.requestId}
-                    onClick={() => setSelectedRequest(item)}
-                    className={`p-3 cursor-pointer transition-all rounded-lg ${
-                      isSelected
-                        ? "bg-blue-50/90 dark:bg-gray-800/90 border-l-4 border-blue-600 shadow-sm"
-                        : "bg-white/60 dark:bg-gray-800/40 hover:bg-white dark:hover:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700/40"
-                    }`}
-                  >
-                    <div className="grid grid-cols-5 gap-4 items-center">
-                      <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">
-                        {item.activityName || "N/A"}
-                      </span>
-                      <span className="text-xs text-gray-600 dark:text-gray-300">
-                        {item.dateofActivity
-                          ? new Date(item.dateofActivity).toLocaleDateString()
-                          : "N/A"}
-                      </span>
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 w-fit rounded-full border border-blue-200 dark:border-blue-800/50">
-                        {item.requestHours} hours
-                      </span>
-                      <span
-                        className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full border w-fit ${
-                          item.status === "Approved"
-                            ? "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/60 border-green-200 dark:border-green-800/50"
-                            : item.status === "Denied"
-                              ? "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/60 border-red-200 dark:border-red-800/50"
-                              : "text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                        }`}
+        <div>
+          <CSHHistoryComp
+            searchLog={searchLog}
+            search={search}
+            currentReq={currentReq}
+            selectedRequest={selectedRequest}
+            setSelectedRequest={setSelectedRequest}
+            setRequests={setRequests}
+          />
+
+          {selectedRequest && (
+            <div
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setSelectedRequest(null);
+                }
+              }}
+              className="bits-modal-overlay fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            >
+              <div className="bits-modal-content fixed inset-0 z-50 m-auto h-fit w-[calc(100%-2rem)] max-w-xl overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#161a22] shadow-2xl outline-none">
+                <div className="bg-white dark:bg-[#161a22] text-gray-900 dark:text-white px-6">
+                  <div className="py-4 border-b border-gray-100 dark:border-gray-800/60 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-base font-semibold text-gray-900 dark:text-white">
+                        Request Details
+                      </p>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRequest(null)}
+                        aria-label="Close details"
+                        className="inline-flex items-center justify-center rounded-lg p-1 text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       >
-                        {item.status || "Unknown"}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {item.submittedAt
-                          ? new Date(item.submittedAt).toLocaleString()
-                          : "N/A"}
-                      </span>
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="divide-y divide-gray-200 dark:divide-gray-800">
+                      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pb-2">
+                        <span>Submitted At</span>
+
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {selectedRequest?.submittedAt
+                            ? new Date(
+                                selectedRequest.submittedAt,
+                              ).toLocaleString()
+                            : "N/A"}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 items-start">
+                        <div className="flex flex-col items-start py-4 text-sm gap-3 text-gray-500 dark:text-gray-400 font-medium">
+                          <span>Activity Name</span>
+                          <span>Date of Activity</span>
+                          <span>Hours Requested</span>
+                          <span>Status</span>
+                          <span>Teacher's note</span>
+                        </div>
+
+                        <div className="flex flex-col items-center py-4 text-sm gap-3 text-gray-900 dark:text-gray-200 text-left">
+                          <div className="w-full flex flex-col gap-3 items-start">
+                            <span className="font-medium">
+                              {selectedRequest.activityName || "N/A"}
+                            </span>
+
+                            <span>
+                              {selectedRequest.dateofActivity
+                                ? new Date(
+                                    selectedRequest.dateofActivity,
+                                  ).toLocaleDateString()
+                                : "N/A"}
+                            </span>
+
+                            <span className="font-semibold text-blue-600 dark:text-blue-400">
+                              {selectedRequest.requestHours} hrs
+                            </span>
+
+                            <span
+                              className={`items-center px-2 py-0.5 rounded-md font-semibold border w-fit ${
+                                selectedRequest.status === "Approved"
+                                  ? "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/60 border-green-200 dark:border-green-800/50"
+                                  : selectedRequest.status === "Denied"
+                                    ? "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/60 border-red-200 dark:border-red-800/50"
+                                    : "text-gray-700 bg-gray-50 dark:text-gray-300 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                              }`}
+                            >
+                              {selectedRequest.status || "Unknown"}
+                            </span>
+
+                            <span>{selectedRequest.trnote || "____"}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {totalPage > 1 && (
@@ -348,6 +407,7 @@ const Admin = () => {
             <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
               Page {currentPage} of {totalPage}
             </span>
+
             <div className="flex gap-2">
               <button
                 type="button"
@@ -360,6 +420,7 @@ const Admin = () => {
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
+
               <button
                 type="button"
                 disabled={currentPage === totalPage}

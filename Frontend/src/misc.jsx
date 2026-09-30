@@ -46,16 +46,16 @@ const WelcomeBackExtra = () => {
   React.useEffect(() => {
     const loadingCheck = async () => {
       try {
-        const response = await fetch("http://localhost:5173")
-        const data = await response.json()
+        const response = await fetch("http://localhost:5173");
+        const data = await response.json();
       } catch (error) {
-        console.log(error)
+        console.log(error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    } //future me pls find a better solution to this. maybe remove it entirely?
+    }; //future me pls find a better solution to this. maybe remove it entirely?
 
-    loadingCheck()
+    loadingCheck();
   }, []);
 
   if (isLoading) {
@@ -83,6 +83,115 @@ const WelcomeBackExtra = () => {
 
   return null;
 };
+
+export function ExportButton({ children }) {
+  const [isExploded, setIsExploded] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(true);
+  
+  const canvasRef = React.useRef(null);
+  const containerRef = React.useRef(null);
+  const particlesRef = React.useRef([]);
+  const animationFrameRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, []);
+
+  const animate = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particlesRef.current = particlesRef.current.filter((p) => {
+      p.x += p.velocityX;
+      p.y += p.velocityY;
+      p.velocityY += 0.12; 
+      p.opacity -= p.decay;
+
+      if (p.opacity <= 0) return false;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.opacity);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      return true;
+    });
+
+    if (particlesRef.current.length > 0) {
+      animationFrameRef.current = requestAnimationFrame(animate);
+    } else {
+      setIsVisible(false);
+    }
+  };
+
+  const handleExplode = () => {
+    if (isExploded) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    setIsExploded(true);
+
+    const newParticles = [];
+    
+    for (let i = 0; i < 30; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 5 + 3;
+      newParticles.push({
+        x: centerX,
+        y: centerY,
+        size: Math.random() * 4 + 2,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        color: `hsl(${Math.random() * 360}, 85%, 60%)`,
+        opacity: 1,
+        decay: Math.random() * 0.02 + 0.02
+      });
+    }
+
+    particlesRef.current = newParticles;
+    animate();
+  };
+
+  if (!isVisible) return null;
+
+  const child = React.Children.only(children);
+  const enhancedChild = React.cloneElement(child, {
+    onClick: (e) => {
+      if (child.props.onClick) child.props.onClick(e);
+      handleExplode();
+    },
+    disabled: isExploded || child.props.disabled,
+    className: `${child.props.className} transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
+      isExploded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'
+    }`
+  });
+
+  return (
+    <div ref={containerRef} className="relative inline-block">
+      <canvas ref={canvasRef} className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-50" />
+      {enhancedChild}
+    </div>
+  );
+} // temp solution, gotta ship tmr :(
+
 
 const ZaHourRangePick = ({
   showMore,
@@ -186,4 +295,4 @@ const ZaHourRangePick = ({
   );
 };
 
-export {WelcomeBackExtra, ZaHourRangePick};
+export { WelcomeBackExtra, ZaHourRangePick };

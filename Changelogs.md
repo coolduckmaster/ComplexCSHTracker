@@ -144,4 +144,10 @@ I am the programmer, *7 hours* of my life *EACH DAY*, wasted on this website. [P
   - Intergration of history checker mi do
 + Backend API edits to "userModels"
   - Intergration of history... MAN YOU KNOW
-
+----
+(09/27/26 - 09/30/26)
++ Fronted edits to MAN CHECK THE COMMIT
++ Today is the day we need to shippp
+  - IM NOT EVEN DONE YET
+  - Lowkey cooked
+  - let good save me.
