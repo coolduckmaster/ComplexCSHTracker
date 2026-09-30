@@ -16,7 +16,7 @@ const api = axios.create();
 
 api.interceptors.request.use((config) => {
   config.baseURL = backendUrl + "/api/user/csh/";
-  const token = localStorage.getItem("adtoken");
+  const token = localStorage.getItem("adtoken") || localStorage.getItem("trtoken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
