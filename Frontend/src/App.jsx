@@ -1,10 +1,4 @@
-/**
- *      _____                __          ___________ __  ______             __
- *     / ___/__  __ _  ___  / /____ __  / ___/ __/ // / /_  __/______ _____/ /_____ ____
- *    / /__/ _ \/  ' \/ _ \/ / -_) \ / / /___\ \/ _  /   / / / __/ _ `/ __/  '_/ -_) __/
- *    \___/\___/_/_/_/ .__/_/\__/_\_\  \___/___/_//_/   /_/ /_/  \_,_/\__/_/\_\\__/_/
- *                  /_/
- */
+/* eslint-disable react-refresh/only-export-components */
 import React from "react";
 import Login from "./Login";
 import Home from "./Home";
@@ -27,10 +21,11 @@ import {
 } from "react-router";
 
 export const backendUrltest = "http://localhost:4000";
-export const backendUrl = "https://complex-csh-tracker-backend.vercel.app"
-export const Placeholder = "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
-  //This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license. Wikimedia.
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+export const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+export const Placeholder =
+  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const ProtectedLink = () => {
   const token = localStorage.getItem("token");
@@ -43,24 +38,18 @@ const ProtectedLink = () => {
 const VeryProtectedLink = () => {
   const token = localStorage.getItem("token");
   const adtoken = localStorage.getItem("adtoken");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!adtoken) {
-    return <Navigate to="/" replace />;
-  }
+  if (!token) return <Navigate to="/login" replace />;
+  if (!adtoken) return <Navigate to="/" replace />;
   return <Outlet context={{}} />;
 };
 
-const TrProtectedLink = () => {
+const StaffProtectedLink = () => {
   const token = localStorage.getItem("token");
+  const adtoken = localStorage.getItem("adtoken");
   const trtoken = localStorage.getItem("trtoken");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  if (!trtoken) {
-    return <Navigate to="/" replace />;
-  }
+
+  if (!token) return <Navigate to="/login" replace />;
+  if (!adtoken && !trtoken) return <Navigate to="/" replace />;
   return <Outlet />;
 };
 
@@ -74,15 +63,14 @@ const PublicLink = () => {
 
 const App = () => {
   const isDark = useAutoDarkDetect();
-  //const [completeOnBoard, setCompleteOnBoard] = React.useState(
-  //localStorage.getItem("CompleteOnboard") || "",
-  //);
-  const [token, setToken] = React.useState(localStorage.getItem("token") || "");
+  const [token, setToken] = React.useState(
+    localStorage.getItem("token") || ""
+  );
   const [adtoken, setAdToken] = React.useState(
-    localStorage.getItem("adtoken") || "",
+    localStorage.getItem("adtoken") || ""
   );
   const [trtoken, setTrToken] = React.useState(
-    localStorage.getItem("trtoken") || "",
+    localStorage.getItem("trtoken") || ""
   );
 
   React.useEffect(() => {
@@ -90,17 +78,9 @@ const App = () => {
     localStorage.setItem("adtoken", adtoken);
     localStorage.setItem("trtoken", trtoken);
 
-    if (token === "") {
-      localStorage.removeItem("token");
-    }
-
-    if (adtoken === "") {
-      localStorage.removeItem("adtoken");
-    }
-
-    if (trtoken === "") {
-      localStorage.removeItem("trtoken");
-    }
+    if (token === "") localStorage.removeItem("token");
+    if (adtoken === "") localStorage.removeItem("adtoken");
+    if (trtoken === "") localStorage.removeItem("trtoken");
   }, [token, adtoken, trtoken]);
 
   const router = createBrowserRouter(
@@ -134,17 +114,13 @@ const App = () => {
             <Route element={<VeryProtectedLink />}>
               <Route
                 path="/admin"
-                element={<Admin setToken={setToken} setAdToken={setAdToken} />}
-              />
-              <Route
-                path="/approval"
                 element={
-                  <CSHPanel setToken={setToken} setTrToken={setTrToken} />
+                  <Admin setToken={setToken} setAdToken={setAdToken} />
                 }
               />
             </Route>
 
-            <Route element={<TrProtectedLink />}>
+            <Route element={<StaffProtectedLink />}>
               <Route
                 path="/approval"
                 element={
@@ -156,8 +132,8 @@ const App = () => {
         </Route>
 
         <Route path="*" element={<Notfound />} />
-      </Route>,
-    ),
+      </Route>
+    )
   );
 
   return (
