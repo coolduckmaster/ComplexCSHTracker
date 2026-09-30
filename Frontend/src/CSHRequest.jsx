@@ -141,7 +141,7 @@ const CSHRequest = () => {
   }
 
   const inputClass =
-    "w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 rounded-lg dark:text-white dark:bg-gray-800 not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500";
+    "w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white text-gray-900 rounded-lg dark:text-white dark:bg-gray-800 not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500";
 
   return (
     <div>
@@ -165,7 +165,7 @@ const CSHRequest = () => {
         <div className="flex gap-4 items-start flex-col lg:flex-row">
           <form
             onSubmit={formHandler}
-            className="w-3xl max-w-full mt-4 grow-3 bg-gray-100 rounded-2xl shadow-sm space-y-6 dark:bg-[#161a22] dark:text-white"
+            className="w-3xl max-w-full mt-4 grow-3 bg-gray-100 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 space-y-6 dark:bg-[#161a22] dark:text-white"
           >
             <div className="grid grid-cols-2 gap-3.5 p-5">
               <div className="flex flex-col space-y-2 mt-2">
@@ -283,7 +283,7 @@ const CSHRequest = () => {
             </div>
           </form>
 
-          <div className="mt-4 ml-3 p-5 gap-3 grow bg-gray-100 rounded-2xl shadow-sm dark:bg-[#161a22] dark:text-white">
+          <div className="mt-4 ml-3 p-5 gap-3 grow bg-gray-100 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 dark:bg-[#161a22] dark:text-white">
             <div className="flex items-center gap-2 mb-4">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 dark:text-blue-500 dark:bg-mist-950">
                 <Info className="h-5 w-5" />
