@@ -200,7 +200,7 @@ const CSHRequestGDPick = ({ vouch = [], setVouch }) => {
         .setSize(modelWidth, modelHeight)
         .setOrigin(window.location.origin)
         .setOAuthToken(accessToken)
-        .setDeveloperKey(import.meta.env.VITE_GOOGLE_API_KEY)
+        .setDeveloperKey(import.meta.env.VITE_GOOGLE)
         .setAppId(import.meta.env.VITE_GOOGLE_APP_ID)
         .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
         .enableFeature(window.google.picker.Feature.SUPPORT_DRIVES)
