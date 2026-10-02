@@ -14,11 +14,15 @@ TLDR: A Tracker that has
 - Bugs (HAD TO RUSH IT DEAD LINE IS TODAY)
 
 Check it out [here](https://complex-csh-tracker.vercel.app/)
+
 TESTER PASSWORDS: 
 - TestStudent@email.com
   - 12345678
 - TestTeacher@email.com
   - 123456789
+
+FOR THOSE TESTING SIGNING UP:
+On boarding School ID is format like this: **ID#####** where # are any number.
 
 Image gallery: 
 
