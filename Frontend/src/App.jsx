@@ -20,8 +20,8 @@ import {
   Outlet,
 } from "react-router";
 
-export const backendUrltest = "http://localhost:4000";
-export const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+export const backendUrl = "http://localhost:4000";
+export const backendUrltest = import.meta.env.VITE_BACKEND_URL || "";
 export const Placeholder =
   "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
 

@@ -218,7 +218,11 @@ const onboarding = async (req, res) => {
     }
 
     if (!schoolId || schoolId.length !== 7) {
-      return res.json({ success: false, message: "School ID is incorrect" });
+      return res.json({
+        success: false,
+        message:
+          "School ID is incorrect, IDs are formatted like this \"ID#####\" where # is a number!",
+      });
     }
 
     const exists = await userModels.findOne({

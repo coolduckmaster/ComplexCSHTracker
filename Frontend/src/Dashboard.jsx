@@ -55,7 +55,7 @@ const CircularProgress = ({ current, total }) => {
         <span className="text-[min(9vw,2.25rem)] text-gray-800 dark:text-gray-200 font-bold">
           {current}
         </span>
-        <span>out of 90</span>
+        <span>out of 60</span>
         <span>hours</span>
       </div>
     </div>

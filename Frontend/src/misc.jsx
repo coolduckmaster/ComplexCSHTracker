@@ -87,7 +87,7 @@ const WelcomeBackExtra = () => {
 export function ExportButton({ children }) {
   const [isExploded, setIsExploded] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(true);
-  
+
   const canvasRef = React.useRef(null);
   const containerRef = React.useRef(null);
   const particlesRef = React.useRef([]);
@@ -100,10 +100,10 @@ export function ExportButton({ children }) {
         canvasRef.current.height = window.innerHeight;
       }
     };
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     handleResize();
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameRef.current);
     };
   }, []);
@@ -111,14 +111,14 @@ export function ExportButton({ children }) {
   const animate = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
+
+    const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     particlesRef.current = particlesRef.current.filter((p) => {
       p.x += p.velocityX;
       p.y += p.velocityY;
-      p.velocityY += 0.12; 
+      p.velocityY += 0.12;
       p.opacity -= p.decay;
 
       if (p.opacity <= 0) return false;
@@ -150,7 +150,7 @@ export function ExportButton({ children }) {
     setIsExploded(true);
 
     const newParticles = [];
-    
+
     for (let i = 0; i < 30; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 5 + 3;
@@ -162,7 +162,7 @@ export function ExportButton({ children }) {
         velocityY: Math.sin(angle) * speed,
         color: `hsl(${Math.random() * 360}, 85%, 60%)`,
         opacity: 1,
-        decay: Math.random() * 0.02 + 0.02
+        decay: Math.random() * 0.02 + 0.02,
       });
     }
 
@@ -180,18 +180,22 @@ export function ExportButton({ children }) {
     },
     disabled: isExploded || child.props.disabled,
     className: `${child.props.className} transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
-      isExploded ? 'opacity-0 scale-50 pointer-events-none' : 'opacity-100 scale-100'
-    }`
+      isExploded
+        ? "opacity-0 scale-50 pointer-events-none"
+        : "opacity-100 scale-100"
+    }`,
   });
 
   return (
     <div ref={containerRef} className="relative inline-block">
-      <canvas ref={canvasRef} className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-50" />
+      <canvas
+        ref={canvasRef}
+        className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-50"
+      />
       {enhancedChild}
     </div>
   );
 } // temp solution, gotta ship tmr :(
-
 
 const ZaHourRangePick = ({
   showMore,

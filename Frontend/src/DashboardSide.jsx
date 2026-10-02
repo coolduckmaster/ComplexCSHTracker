@@ -16,8 +16,9 @@ import {
 const DashboardSide = () => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isRole, setIsRole] = React.useState("Student");
-  const [isOpen, setOpen] = React.useState(false); //Open menu yesidfk
+  const [isOpen, setOpen] = React.useState(false);
   const [logoutOpen, setlogoutOpen] = React.useState(false);
+  const seenwelcome = sessionStorage.getItem("seenwelcome") || false;
   const storedName = localStorage.getItem("userName") || "User";
   const storedAvt = localStorage.getItem("userAvatar") || Placeholder;
 
@@ -57,7 +58,7 @@ const DashboardSide = () => {
 
   return (
     <div className="bg-gray-100 dark:bg-black">
-      <WelcomeBackExtra />
+      {(!seenwelcome) && <WelcomeBackExtra />}
       {logoutOpen === false ? null : (
         <div className="bits-modal-overlay fixed inset-0 z-9999 bg-darker/80 backdrop-blur-md">
           <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
@@ -103,6 +104,7 @@ const DashboardSide = () => {
           </div>
         </div>
       )}
+
       <div
         className={`min-h-screen w-full bg-[#d1d5da] dark:bg-mist-950 dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
       >
