@@ -66,12 +66,12 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
             if (response.data.message) {
               toast.success(response.data.message);
             }
-            window.location.reload();
           } catch (error) {
             console.error(error);
           }
           setToken(response.data.token);
           toast.success("Logged in successfully!");
+          window.location.reload();
         } else if (response.data.message === "User does not exist") {
           toast.error("User does not exist. Please sign up first.");
         } else {
@@ -112,11 +112,11 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
           console.log(error);
         }
 
-        setToken(token)
+        setToken(token);
         toast.success("Google Sign-In successful!");
-        window.location.replace("/")
+        window.location.replace("/");
       } else {
-        toast.error(response.data.message || "Google authentication failed.")
+        toast.error(response.data.message || "Google authentication failed.");
       }
     } catch (error) {
       console.log(error);

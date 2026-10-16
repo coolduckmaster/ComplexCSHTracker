@@ -23,7 +23,7 @@ const authware = async (req, res, next) => {
 
     if (!["Admin", "Teacher"].includes(decoded.role)) {
       return res.json({
-        success: true,
+        success: false,
         message: "Denied access! Incorrect role!",
       });
     }

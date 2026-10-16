@@ -200,8 +200,9 @@ const CSHRequest = () => {
                   required
                   type="number"
                   min="0"
+                  max="24"
                   placeholder="e.g., 3, 5"
-                  className={inputClass}
+                  className={inputClass} 
                 />
 
                 <span className="text-xs text-gray-500 dark:text-white/70">
@@ -218,6 +219,7 @@ const CSHRequest = () => {
                 <input
                   value={doa}
                   type={inputType}
+                  min="2023-01-01"
                   required
                   onFocus={() => setInputType("date")}
                   onBlur={(e) => {

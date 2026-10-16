@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 import Home from "./Home";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAutoDarkDetect() {
@@ -30,9 +32,12 @@ const WelcomeBackExtra = () => {
     return sessionStorage.getItem("seenwelcome") === "true";
   });
   const [isFaded, setIsFaded] = React.useState(false);
+  const [isLowTaperFade, setIsLowTaperFade] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const storedName = localStorage.getItem("userName") || "User";
   const CompleteOnboard = localStorage.getItem("CompleteOnboard") === "true";
+  const seenwelcome = sessionStorage.getItem("seenwelcome") || false;
+
   const handleClick = () => {
     if (isFaded) return;
     setIsFaded(true);
@@ -46,12 +51,15 @@ const WelcomeBackExtra = () => {
   React.useEffect(() => {
     const loadingCheck = async () => {
       try {
-        const response = await fetch("http://localhost:5173");
+        const response = await fetch("https://complex-csh-tracker.vercel.app");
         const data = await response.json();
       } catch (error) {
         console.log(error);
       } finally {
-        setIsLoading(false);
+        setIsLowTaperFade(true);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
       }
     }; //future me pls find a better solution to this. maybe remove it entirely?
 
@@ -60,7 +68,13 @@ const WelcomeBackExtra = () => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-50 flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white transition-opacity duration-1000 ease-in-out">
+      <div
+        className={`fixed inset-0 z-50 flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white transition-opacity duration-1000 ease-in-out ${
+          isLowTaperFade & showNext
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100"
+        }`}
+      >
         <p>Loading...</p>
       </div>
     );
@@ -84,118 +98,7 @@ const WelcomeBackExtra = () => {
   return null;
 };
 
-export function ExportButton({ children }) {
-  const [isExploded, setIsExploded] = React.useState(false);
-  const [isVisible, setIsVisible] = React.useState(true);
-
-  const canvasRef = React.useRef(null);
-  const containerRef = React.useRef(null);
-  const particlesRef = React.useRef([]);
-  const animationFrameRef = React.useRef(null);
-
-  React.useEffect(() => {
-    const handleResize = () => {
-      if (canvasRef.current) {
-        canvasRef.current.width = window.innerWidth;
-        canvasRef.current.height = window.innerHeight;
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      cancelAnimationFrame(animationFrameRef.current);
-    };
-  }, []);
-
-  const animate = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    particlesRef.current = particlesRef.current.filter((p) => {
-      p.x += p.velocityX;
-      p.y += p.velocityY;
-      p.velocityY += 0.12;
-      p.opacity -= p.decay;
-
-      if (p.opacity <= 0) return false;
-
-      ctx.save();
-      ctx.globalAlpha = Math.max(0, p.opacity);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-      return true;
-    });
-
-    if (particlesRef.current.length > 0) {
-      animationFrameRef.current = requestAnimationFrame(animate);
-    } else {
-      setIsVisible(false);
-    }
-  };
-
-  const handleExplode = () => {
-    if (isExploded) return;
-
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    setIsExploded(true);
-
-    const newParticles = [];
-
-    for (let i = 0; i < 30; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 5 + 3;
-      newParticles.push({
-        x: centerX,
-        y: centerY,
-        size: Math.random() * 4 + 2,
-        velocityX: Math.cos(angle) * speed,
-        velocityY: Math.sin(angle) * speed,
-        color: `hsl(${Math.random() * 360}, 85%, 60%)`,
-        opacity: 1,
-        decay: Math.random() * 0.02 + 0.02,
-      });
-    }
-
-    particlesRef.current = newParticles;
-    animate();
-  };
-
-  if (!isVisible) return null;
-
-  const child = React.Children.only(children);
-  const enhancedChild = React.cloneElement(child, {
-    onClick: (e) => {
-      if (child.props.onClick) child.props.onClick(e);
-      handleExplode();
-    },
-    disabled: isExploded || child.props.disabled,
-    className: `${child.props.className} transform transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] ${
-      isExploded
-        ? "opacity-0 scale-50 pointer-events-none"
-        : "opacity-100 scale-100"
-    }`,
-  });
-
-  return (
-    <div ref={containerRef} className="relative inline-block">
-      <canvas
-        ref={canvasRef}
-        className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-50"
-      />
-      {enhancedChild}
-    </div>
-  );
-} // temp solution, gotta ship tmr :(
+ // deadline actually moved to oct 31 wth.
 
 const ZaHourRangePick = ({
   showMore,
@@ -259,7 +162,7 @@ const ZaHourRangePick = ({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="flex-1 p-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="flex-1 px-2.5 py-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="submittedAt">Submission Date</option>
             <option value="dateofActivity">Activity Date</option>
@@ -272,7 +175,7 @@ const ZaHourRangePick = ({
             onClick={() =>
               setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
             }
-            className="px-2.5 py-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800/60 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-semibold"
+            className="px-2.5 py-1.5 rounded-md border border-gray-300 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {sortOrder === "asc" ? "↑ Ascend" : "↓ Descend"}
           </button>
@@ -299,4 +202,127 @@ const ZaHourRangePick = ({
   );
 };
 
-export { WelcomeBackExtra, ZaHourRangePick };
+const exportToPdf = async (data) => {
+  const loadMyImagepls = (image) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = image;
+    });
+
+  const pdf = new jsPDF({ orientation: "landscape" });
+  pdf.setFontSize(20);
+  pdf.text("Complex CSH Tracker - Your History", 14, 15);
+  pdf.setFontSize(15);
+  pdf.text(`Exported on ${new Date().toLocaleString()}`, 14, 22);
+  try {
+    const amiloaded = await loadMyImagepls("/CSH.png");
+    pdf.addImage(amiloaded, "PNG", 267, 10, 16, 16, undefined, "FAST");
+  } catch (error) {
+    console.log("Image pdf error has occured.");
+  }
+
+  autoTable(pdf, {
+    startY: 28,
+    head: [
+      [
+        "Activity",
+        "Date of Activity",
+        "Hours",
+        "Status",
+        "Teacher's Note",
+        "Submitted On",
+      ],
+    ],
+    body: data.map((row) => [
+      row.activityName || "N/A",
+      row.dateofActivity
+        ? new Date(row.dateofActivity).toLocaleDateString()
+        : "N/A",
+      row.requestHours ?? "?",
+      row.status || "Unknown",
+      row.trnote || "",
+      row.submittedAt ? new Date(row.submittedAt).toLocaleString() : "N/A",
+    ]),
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [37, 99, 235] },
+  });
+
+  pdf.save(
+    `csh-history ${new Date().toLocaleString().replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+  );
+}; // thank you tr. hamza
+
+const CircularProgress = ({ current, total }) => {
+  const percentage = Math.min(Math.max((current / total) * 100, 0), 100);
+  const radius = 70;
+  const strokeWidth = 12;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashOffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center w-full max-w-40 aspect-square">
+      <svg viewBox="0 0 160 160" className="-rotate-90 w-full h-full">
+        <circle
+          cx="80"
+          cy="80"
+          r={radius}
+          className="text-gray-200 dark:text-gray-700 stroke-current"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        <circle
+          cx="80"
+          cy="80"
+          r={radius}
+          className="text-emerald-500 stroke-current transition-all duration-500 ease-out"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashOffset}
+        />
+      </svg>
+
+      <div className="absolute flex flex-col text-center text-[min(3.5vw,0.875rem)] text-gray-800 dark:text-gray-200/50 leading-tight">
+        <span className="text-[min(9vw,2.25rem)] text-gray-800 dark:text-gray-200 font-bold">
+          {current}
+        </span>
+        <span>out of {total}</span>
+        <span>hours</span>
+      </div>
+    </div>
+  );
+};
+
+const ProgressBar = ({ current, yeargoal }) => {
+  const percentage = Math.min(Math.max((current / yeargoal) * 100, 0), 100);
+
+  return (
+    <div className="w-full max-w-md flex flex-col gap-2">
+      <div className="flex items-center justify-center gap-2">
+        <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-emerald-500 transition-all duration-500 ease-out rounded-full"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <span className="font-semibold text-emerald-500">
+          {Math.round(percentage)}%
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 justify-between items-baseline text-sm text-gray-600 dark:text-gray-300">
+        <span>{current} hours</span>
+        <span className="text-right">{yeargoal} hours</span>
+        <span className="text-gray-400">Approved</span>
+        <span className="text-gray-400 text-right">Goal</span>
+      </div>
+    </div>
+  );
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
+export { WelcomeBackExtra, ZaHourRangePick, exportToPdf, CircularProgress, ProgressBar };

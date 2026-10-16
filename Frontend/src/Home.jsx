@@ -78,20 +78,20 @@ const Home = ({ setToken }) => {
   };
 
   if (completeOnboard === true) {
-    if (!showNext) {
-      return (
-        <div className="bg-white dark:bg-black">
-          <div
-            onClick={handleClick}
-            className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none transition-opacity duration-1000 ease-in-out ${
-              isFaded ? "opacity-0 pointer-events-none" : "opacity-100"
-            }`}
-          >
-            <p className="font-mono text-3xl"> Welcome back {storedName} </p>
-          </div>
-        </div>
-      );
-    }
+    // if (!showNext) {
+    //   return (
+    //     <div className="bg-white dark:bg-black">
+    //       <div
+    //         onClick={handleClick}
+    //         className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none transition-opacity duration-1000 ease-in-out ${
+    //           isFaded ? "opacity-0 pointer-events-none" : "opacity-100"
+    //         }`}
+    //       >
+    //         <p className="font-mono text-3xl"> Welcome back {storedName} </p>
+    //       </div>
+    //     </div>
+    //   );
+    // }
 
     return <Dashboard setToken={setToken} />;
   }

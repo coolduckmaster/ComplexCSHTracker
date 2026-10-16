@@ -20,11 +20,11 @@ import {
   Outlet,
 } from "react-router";
 
-export const backendUrltest = "http://localhost:4000";
-export const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
+export const backendUrl = "http://localhost:4000";
+export const backendUrltest = import.meta.env.VITE_BACKEND_URL || "";
 export const Placeholder =
-  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png";
-
+  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"; //This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license. Wikimedia. 
+//Forgot to re-add the license for the placeholder image.
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const ProtectedLink = () => {

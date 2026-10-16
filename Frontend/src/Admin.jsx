@@ -18,6 +18,9 @@ const Admin = () => {
             Debug, Manage, and Test New Feature
           </p>
         </div>
+        <div>
+          <p>Nuke the data base</p>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import React from "react";
 import CSHHistoryComp from "./CSHHistoryComp";
-import { ZaHourRangePick, ExportButton } from "./misc";
+import { ZaHourRangePick, exportToPdf } from "./misc";
 
 import {
   ChevronDown,
@@ -164,14 +164,13 @@ const CSHHistory = () => {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           </div>
 
-          <ExportButton>
-            <button
-              type="button"
-              className="flex items-center text-sm font-medium rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200 transition-colors"
-            >
-              Export
-            </button>
-          </ExportButton>
+          <button
+            type="button"
+            onClick={() => exportToPdf(requests)} //doesnt work??? wth? perhaps a bug with vscode intergrated browser. pls check tmr 
+            className="flex items-center text-sm font-medium rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200 transition-colors"
+          >
+            Export
+          </button>
         </div>
 
         <div className="w-full p-2.5 px-4 bg-gray-100 rounded-xl shadow-sm dark:bg-[#161a22]/70 dark:text-white border border-gray-200 dark:border-gray-800">
@@ -200,7 +199,9 @@ const CSHHistory = () => {
               <div className="relative">
                 <button
                   type="button"
-                  className="flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"
+                  className={`flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors ${
+                    showRange && "ring-2 ring-blue-500"
+                  }`}
                   onClick={() => {
                     setShowRange((prev) => !prev);
                     setShowMore(false);
@@ -274,7 +275,9 @@ const CSHHistory = () => {
               <div className="relative">
                 <button
                   type="button"
-                  className="flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors"
+                  className={`flex rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 text-gray-700 dark:text-gray-200 items-center hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors ${
+                    showMore && "ring-2 ring-blue-500"
+                  }`}
                   onClick={() => {
                     setShowMore((prev) => !prev);
                     setShowRange(false);

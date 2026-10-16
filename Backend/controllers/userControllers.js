@@ -143,12 +143,10 @@ const loginOauth = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error during Google Auth",
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error during Google Auth",
+    });
   }
 };
 
@@ -221,7 +219,7 @@ const onboarding = async (req, res) => {
       return res.json({
         success: false,
         message:
-          "School ID is incorrect, IDs are formatted like this \"ID#####\" where # is a number!",
+          'School ID is incorrect, IDs are formatted like this "ID#####" where # is a number!',
       });
     }
 
@@ -420,12 +418,14 @@ const approvedenyCSH = async (req, res) => {
     }
 
     const User = await CSHModel.findOne({ userId });
+    if (!User) {
+      return res.json({ success: false, message: "Doesn't exist." });
+    }
     const History = User.history.find(
       (item) =>
         item._id.toString() === requestId || item.requestId === requestId,
     );
-
-    if (!User || !History) {
+    if (!History) {
       return res.json({ success: false, message: "Doesn't exist." });
     }
 
@@ -508,6 +508,24 @@ const registerCSH = async (req, res) => {
       });
     }
 
+    if (dateofActivity < "2023-01-01") {
+      return res.json({
+        success: false,
+        message: "Error: Date of actvity invaild!",
+      });
+    }
+
+    if (
+      !Number.isInteger(requestHours) ||
+      requestHours <= 0 ||
+      requestHours > 24
+    ) {
+      return res.json({
+        success: false,
+        message: "Error: Requested hours invalid!",
+      });
+    }
+
     const numberoHours = Number(requestHours);
 
     const registering = await CSHModel.findOneAndUpdate(
@@ -572,6 +590,53 @@ const checkCSH = async (req, res) => {
   }
 };
 
+const checkClassCSH = async (req, res) => {
+  try {
+    const { grade } = req.body;
+    if (!grade) {
+      return res.json({
+        success: false,
+        message: "No user ID or ID false",
+      });
+    }
+
+    let classCSHData = await CSHModel.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $match: { "user.grade": grade } },
+      {
+        $group: {
+          _id: "$user.grade",
+          totalApproved: { $sum: "$ApprovedHours" },
+          totalPendingHours: { $sum: "$PendingHours" },
+          studentCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const data = classCSHData[0] || {
+      _id: grade,
+      totalApprovedHours: 0,
+      totalPendingHours: 0,
+      studentCount: 0,
+    };
+    return res.json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 const requestHandle = async (req, res) => {
   try {
     const { userId, ApprovedRequest, PendingRequest } = req.body;
@@ -586,7 +651,8 @@ const requestHandle = async (req, res) => {
     let requestData = await extrasModels.findOne({ userId: userId });
 
     if (!requestData) {
-      requestData = awaitextrasModels.create({
+      requestData = await extrasModels.create({
+        userId,
         ApprovedRequest: 0,
         PendingRequest: 0,
       });
@@ -610,6 +676,7 @@ export {
   onboarding,
   rolesCheck,
   checkCSH,
+  checkClassCSH,
   requestHandle,
   getCSHHistory,
   getPendingCSH,

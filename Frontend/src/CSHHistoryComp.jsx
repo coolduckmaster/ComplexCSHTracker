@@ -16,12 +16,12 @@ axios.interceptors.request.use((config) => {
 });
 
 const CSHHistoryComp = ({
-  searchLog = [],
-  search = "",
-  currentReq = [],
-  selectedRequest = null,
+  searchLog,
+  search,
+  currentReq,
+  selectedRequest,
   setSelectedRequest,
-  setRequests,
+  setRequests, 
 }) => {
   React.useEffect(() => {
     const fetchRequests = async () => {

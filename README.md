@@ -1,3 +1,6 @@
+<img width="100" height="100" alt="CSHTracker-Logo" src="https://github.com/user-attachments/assets/35ee8e14-6d14-4d4d-af37-28202f527b1d" />
+
+
 # Complex CSH Tracker
  1. **Why did I create this?**
  My school runs on a very old tracking system for CSH (Community Service Hours) meaning it was hard for us students to see how much we have as well as see what happens to our CSH requests. I made this to solve this problem and decided to join stardance for the fun of it  :O

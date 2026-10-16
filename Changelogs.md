@@ -1,7 +1,7 @@
 ## BIG LINTER UPDATE
-I am the ESLINT, I wasted **4.9 hours** on javascript errors.
+I am the ESLINT, I wasted **5.1 hours** on javascript errors.
 
-I am the programmer, *7 hours* of my life *EACH DAY*, wasted on this website. [Please help me, I have 130/320 hours required :( ]
+I am the programmer, *7 hours* of my life *EACH DAY*, wasted on this website. [Please help me, I have 146/320 hours required :( ]
 
 ----
 (8/4/2026)
@@ -151,3 +151,27 @@ I am the programmer, *7 hours* of my life *EACH DAY*, wasted on this website. [P
   - IM NOT EVEN DONE YET
   - Lowkey cooked
   - let good save me.
+----
+(10/01/26 - 10/02/26)
++ Rush to get past review
+  - Added readme
++ Rough fixes
+  - Added more informed toast pop up during onboarding
+----
+(10/03/26 - 10/13/26)
++ Frontend "CSHPanelComp"
++ Frontend edits to "CSHPanel"
+  - Split the display into a different file for readability (I didnt want my file to be <500 lines long)
+  - Filters for campus and grade
++ Frontend edits to "CSHHistory"
+  - Export button functionality
+  - Style edits
++ Frontend edits to "Dashboard"
+  - You can click the history widget to go to history.
++ Frontend bugs fixes
+  - Fixed welcomeback appearing when signing out
+  - Fixed loading screen not fading
+  - FOR SUPER EARTH
++ Backend bugs fixes
+  - Fixed request dates being 1/1/0 :P 
+  - Fixed request hours being impossibly high as well as lower than 0 
