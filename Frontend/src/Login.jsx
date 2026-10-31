@@ -1,32 +1,63 @@
 import React from "react";
-import axios from "axios";
-import { backendUrl } from "./App";
+import { api, publicApi } from "./api";
 import { toast } from "react-toastify";
 import { GoogleLogin } from "@react-oauth/google";
-import "react-toastify/dist/ReactToastify.css";
 
-const Login = ({ setToken, setAdToken, setTrToken }) => {
+const loggedIncheck = async ({ token, userId, name, avatarUrl, grade }) => {
+  localStorage.clear();
+  sessionStorage.clear();
+  //backup cleansing
+
+  localStorage.setItem("token", token);
+  localStorage.setItem("userId", userId);
+  localStorage.setItem("userName", name);
+  if (avatarUrl) localStorage.setItem("userAvatar", avatarUrl);
+  localStorage.setItem("userGrade", grade);
+  try {
+    const { data } = await api.post(
+      "extracheck",
+      {},
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (data.adtoken) {
+      localStorage.setItem("adtoken", data.adtoken);
+    } else if (data.trtoken) {
+      localStorage.setItem("trtoken", data.trtoken);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  window.location.replace("/");
+};
+
+const Login = () => {
   const [currentState, setCurrentState] = React.useState("Login");
   const [name, setName] = React.useState("");
   const [NLemail, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [iamsubmit, setIamsubmit] = React.useState(false);
 
   const formHandler = async (event) => {
     event.preventDefault();
+    if (iamsubmit) return;
+    setIamsubmit(true);
     try {
+      const email = NLemail.toLowerCase();
       if (currentState === "Sign Up") {
-        const email = NLemail.toLowerCase();
-        const response = await axios.post(backendUrl + "/api/user/register", {
+        const response = await publicApi.post("register", {
           name,
           email,
           password,
         });
         if (response.data.success) {
-          setToken(response.data.token);
           toast.success("Account created successfully!");
-          localStorage.setItem("userId", response.data.userId);
-          localStorage.setItem("userName", response.data.fetchname);
-          window.location.reload();
+          await loggedIncheck({
+            token: response.data.token,
+            userId: response.data.userId,
+            name: response.data.fetchname,
+            grade: response.data.grade,
+          });
         } else if (response.data.message === "User already exists") {
           toast.error("User already exists. Please login instead.");
         } else if (response.data.message === "Invalid email") {
@@ -42,38 +73,15 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
           );
         }
       } else {
-        const email = NLemail.toLowerCase();
-        const response = await axios.post(backendUrl + "/api/user/login", {
-          email,
-          password,
-        });
+        const response = await publicApi.post("login", { email, password });
         if (response.data.success) {
-          localStorage.setItem("userId", response.data.userId);
-          localStorage.setItem("userName", response.data.fetchname);
-          const userId = response.data.userId;
-
-          try {
-            const response = await axios.post(
-              backendUrl + "/api/user/extracheck",
-              { userId },
-            );
-            if (response.data.adtoken) {
-              setAdToken(response.data.adtoken);
-            } else if (response.data.trtoken) {
-              setTrToken(response.data.trtoken);
-            }
-
-            if (response.data.message) {
-              toast.success(response.data.message);
-            }
-          } catch (error) {
-            console.error(error);
-          }
-          setToken(response.data.token);
           toast.success("Logged in successfully!");
-          window.location.reload();
-        } else if (response.data.message === "User does not exist") {
-          toast.error("User does not exist. Please sign up first.");
+          await loggedIncheck({
+            token: response.data.token,
+            userId: response.data.userId,
+            name: response.data.fetchname,
+            grade: response.data.grade,
+          });
         } else {
           toast.error("Invalid email or password. Please try again.");
         }
@@ -81,40 +89,27 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
     } catch (error) {
       console.error("Error during authentication:", error);
       toast.error(error.message);
+    } finally {
+      setIamsubmit(false);
     }
   };
 
   const handleGoogleAuth = async (credentials) => {
     try {
-      const response = await axios.post(backendUrl + "/api/user/oauthlogin", {
+      const response = await publicApi.post("oauthlogin", {
         OAuthtoken: credentials.credential,
       });
 
       if (response.data.success) {
         const { token, user } = response.data;
-
-        localStorage.setItem("userId", user.id);
-        localStorage.setItem("userName", user.name);
-        if (user.avatarUrl) {
-          localStorage.setItem("userAvatar", user.avatarUrl);
-        }
-        try {
-          const extraCheck = await axios.post(
-            backendUrl + "/api/user/extracheck",
-            { userId: user.id },
-          );
-          if (extraCheck.data.adtoken) {
-            setAdToken(extraCheck.data.adtoken);
-          } else if (extraCheck.data.trtoken) {
-            setTrToken(extraCheck.data.trtoken);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-
-        setToken(token);
         toast.success("Google Sign-In successful!");
-        window.location.replace("/");
+        await loggedIncheck({
+          token,
+          userId: user.id,
+          name: user.name,
+          avatarUrl: user.avatarUrl,
+          grade: response.data.grade,
+        });
       } else {
         toast.error(response.data.message || "Google authentication failed.");
       }
@@ -174,7 +169,7 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
           </div>
         </div>
         <div className="flex justify-between text-sm text-blue-600 dark:text-blue-400">
-          <p className="cursor-pointer hover:underline">Forgot password</p>
+          <div></div>
           {currentState === "Login" ? (
             <p
               onClick={() => setCurrentState("Sign Up")}
@@ -191,7 +186,10 @@ const Login = ({ setToken, setAdToken, setTrToken }) => {
             </p>
           )}
         </div>
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300">
+        <button
+          disabled={iamsubmit}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {currentState === "Login" ? "Sign In" : "Sign Up"}
         </button>
       </form>

@@ -6,12 +6,12 @@ import { userModels, CSHModel, extrasModels } from "../models/userModels.js";
 import { OAuth2Client } from "google-auth-library";
 
 const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET);
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 const rolesCheck = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user.id;
     if (!userId) {
       return res.json({ success: false, message: "User ID is required." });
     }
@@ -28,6 +28,7 @@ const rolesCheck = async (req, res) => {
       const adtoken = jwt.sign(
         { userId, role: fetchrole },
         process.env.JWT_SECRET,
+        { expiresIn: "7d" },
       );
       return res.json({
         success: true,
@@ -38,6 +39,7 @@ const rolesCheck = async (req, res) => {
       const trtoken = jwt.sign(
         { userId, role: fetchrole },
         process.env.JWT_SECRET,
+        { expiresIn: "7d" },
       );
       return res.json({ success: true, message: "Teacher access.", trtoken });
     } else {
@@ -62,12 +64,14 @@ const loginUser = async (req, res) => {
       const token = createToken(user._id);
       const fetchname = user.name;
       const userId = user._id;
+      const grade = user.grade;
       res.json({
         success: true,
         message: "User logged in successfully",
         token,
         fetchname,
         userId,
+        grade,
       });
     } else {
       res.json({ success: false, message: "Invalid credentials" });
@@ -138,6 +142,7 @@ const loginOauth = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        grade: user.grade,
         avatarUrl: user.avatarUrl,
       },
     });
@@ -196,7 +201,8 @@ const registerUser = async (req, res) => {
 
 const onboarding = async (req, res) => {
   try {
-    const { userId, grade, campus, schoolId } = req.body;
+    const userId = req.user.id;
+    const { grade, campus, schoolId } = req.body;
 
     const Onboardcheck = await extrasModels.findOne({ userId: userId });
 
@@ -269,7 +275,7 @@ const onboarding = async (req, res) => {
 
 const getCSHHistory = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user.id;
     if (!userId) {
       return res.json({ success: false, message: "User ID is required." });
     }
@@ -349,6 +355,7 @@ const getPendingCSH = async (req, res) => {
           dateofActivity: "$history.dateofActivity",
           vouch: "$history.vouch",
           submittedAt: "$history.submittedAt",
+          trnote:"$history.trnote",
           description: "$history.description",
         },
       },
@@ -413,20 +420,18 @@ const approvedenyCSH = async (req, res) => {
       }
     }
 
-    if (!status) {
-      return res.json({ success: false, message: "No status data sent!" });
+    if (!["Approved", "Denied"].includes(status)) {
+      return res.json({ success: false, message: "Invalid status." });
     }
 
     const User = await CSHModel.findOne({ userId });
     if (!User) {
-      return res.json({ success: false, message: "Doesn't exist." });
+      return res.json({ success: false, message: "User has no CSH record." });
     }
-    const History = User.history.find(
-      (item) =>
-        item._id.toString() === requestId || item.requestId === requestId,
-    );
+
+    const History = User.history.id(requestId);
     if (!History) {
-      return res.json({ success: false, message: "Doesn't exist." });
+      return res.json({ success: false, message: "Request doesn't exist." });
     }
 
     const hours = Number(History.requestHours);
@@ -476,17 +481,10 @@ const approvedenyCSH = async (req, res) => {
 };
 
 const registerCSH = async (req, res) => {
-  const fullDate = new Date().toISOString().split("T")[0];
-
   try {
-    const {
-      userId,
-      activityName,
-      requestHours,
-      dateofActivity,
-      vouch,
-      description,
-    } = req.body;
+    const userId = req.user.id;
+    const { activityName, requestHours, dateofActivity, vouch, description } =
+      req.body;
 
     if (
       !activityName ||
@@ -501,43 +499,39 @@ const registerCSH = async (req, res) => {
       });
     }
 
-    if (dateofActivity > fullDate) {
-      return res.json({
-        success: false,
-        message: "Error: Date of actvity invaild!",
-      });
-    }
-
-    if (dateofActivity < "2023-01-01") {
-      return res.json({
-        success: false,
-        message: "Error: Date of actvity invaild!",
-      });
-    }
-
-    if (
-      !Number.isInteger(requestHours) ||
-      requestHours <= 0 ||
-      requestHours > 24
-    ) {
+    const hours = Number(requestHours);
+    if (!Number.isInteger(hours) || hours <= 0 || hours > 24) {
       return res.json({
         success: false,
         message: "Error: Requested hours invalid!",
       });
     }
 
-    const numberoHours = Number(requestHours);
+    const today = new Date().toISOString().split("T")[0];
+    if (dateofActivity > today || dateofActivity < "2023-01-01") {
+      return res.json({
+        success: false,
+        message: "Error: Date of activity invalid!",
+      });
+    }
 
-    const registering = await CSHModel.findOneAndUpdate(
-      { userId: userId },
+    if (
+      String(activityName).length > 100 ||
+      String(description).trim().split(/\s+/).length > 100
+    ) {
+      return res.json({ success: false, message: "Text too long." });
+    }
+
+    await CSHModel.findOneAndUpdate(
+      { userId },
       {
-        $inc: { PendingHours: requestHours },
+        $inc: { PendingHours: hours },
         $push: {
           history: {
             activityName,
-            requestHours: Number(requestHours),
+            requestHours: hours,
             dateofActivity: new Date(dateofActivity),
-            vouch,
+            vouch: vouch,
             status: "Pending",
             description,
           },
@@ -547,7 +541,7 @@ const registerCSH = async (req, res) => {
     );
 
     await extrasModels.findOneAndUpdate(
-      { userId: userId },
+      { userId },
       { $inc: { PendingRequest: 1 } },
       { upsert: true },
     );
@@ -561,7 +555,7 @@ const registerCSH = async (req, res) => {
 
 const checkCSH = async (req, res) => {
   try {
-    const { userId, ApprovedHours, PendingHours } = req.body;
+    const userId = req.user.id;
 
     if (!userId) {
       return res.json({
@@ -593,14 +587,12 @@ const checkCSH = async (req, res) => {
 const checkClassCSH = async (req, res) => {
   try {
     const { grade } = req.body;
+
     if (!grade) {
-      return res.json({
-        success: false,
-        message: "No user ID or ID false",
-      });
+      return res.json({ success: false, message: "Grade is required." });
     }
 
-    let classCSHData = await CSHModel.aggregate([
+    const classCSHData = await CSHModel.aggregate([
       {
         $lookup: {
           from: "users",
@@ -614,7 +606,7 @@ const checkClassCSH = async (req, res) => {
       {
         $group: {
           _id: "$user.grade",
-          totalApproved: { $sum: "$ApprovedHours" },
+          totalApprovedHours: { $sum: "$ApprovedHours" },
           totalPendingHours: { $sum: "$PendingHours" },
           studentCount: { $sum: 1 },
         },
@@ -627,19 +619,202 @@ const checkClassCSH = async (req, res) => {
       totalPendingHours: 0,
       studentCount: 0,
     };
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+const settingSync = async (req, res) => {
+  try {
+    const validClasses = [
+      "None",
+      "Grade 9",
+      "Grade 10",
+      "Grade 11",
+      "Grade 12",
+    ];
+    const userId = req.user.id;
+    const { ownedClass } = req.body;
+    if (!validClasses.includes(ownedClass)) {
+      return res.json({ success: false, message: "Invalid Class" });
+    }
+
+    let user = await extrasModels.findOne({ userId });
+
+    if (!user) {
+      user = await extrasModels.create({ userId, ownedClass });
+    } else if (ownedClass && user.ownedClass !== ownedClass) {
+      user = await extrasModels.findOneAndUpdate(
+        { userId },
+        { $set: { ownedClass } },
+        { new: true },
+      );
+    }
+
+    return res.json({ success: true, message: "Settings set!" });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+const fetchSetting = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    if (!userId) {
+      return res.json({ success: false, message: "No User ID given" });
+    }
+
+    const settingsCheck = await extrasModels.findOne({ userId: userId });
+
     return res.json({
       success: true,
-      data: data,
+      data: { ownedClass: settingsCheck?.ownedClass || "None" },
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+const ranking = async (req, res) => {
+  try {
+    const studentsRankings = await userModels.aggregate([
+      {
+        $lookup: {
+          from: "extras",
+          localField: "_id",
+          foreignField: "userId",
+          as: "infoExtras",
+        },
+      },
+      { $unwind: "$infoExtras" },
+      {
+        $match: {
+          "infoExtras.role": "Student",
+        },
+      },
+      {
+        $lookup: {
+          from: "cshes",
+          localField: "_id",
+          foreignField: "userId",
+          as: "infoCshes",
+        },
+      },
+      {
+        $unwind: {
+          path: "$infoCshes",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          avatarUrl: 1,
+          grade: 1,
+          ownedClass: { $ifNull: ["$infoExtras.ownedClass", "N/A"] },
+          approvedHours: { $ifNull: ["$infoCshes.ApprovedHours", 0] },
+        },
+      },
+      {
+        $match: {
+          approvedHours: { $gt: 0 },
+        },
+      },
+      {
+        $sort: { approvedHours: -1 },
+      },
+    ]);
+    return res.json({
+      success: true,
+      count: studentsRankings.length,
+      ranking: studentsRankings,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+const trranking = async (req, res) => {
+  try {
+    const { grade } = req.body;
+
+    if (!grade || typeof grade !== "string") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Teacher class not found" });
+    }
+
+    const studentsRankings = await userModels.aggregate([
+      { $match: { grade } },
+      {
+        $lookup: {
+          from: "extras",
+          localField: "_id",
+          foreignField: "userId",
+          as: "infoExtras",
+        },
+      },
+      { $unwind: "$infoExtras" },
+      {
+        $match: {
+          "infoExtras.role": "Student",
+        },
+      },
+      {
+        $lookup: {
+          from: "cshes",
+          localField: "_id",
+          foreignField: "userId",
+          as: "infoCshes",
+        },
+      },
+      { $unwind: { path: "$infoCshes", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          avatarUrl: 1,
+          grade: 1,
+          approvedHours: { $ifNull: ["$infoCshes.ApprovedHours", 0] },
+        },
+      },
+      { $sort: { approvedHours: 1, name: 1 } }, // name = stable order for ties
+      { $limit: 5 },
+    ]);
+
+    return res.json({
+      success: true,
+      count: studentsRankings.length,
+      ranking: studentsRankings,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
   }
 };
 
 const requestHandle = async (req, res) => {
   try {
-    const { userId, ApprovedRequest, PendingRequest } = req.body;
+    const userId = req.user.id;
 
     if (!userId) {
       return res.json({
@@ -681,4 +856,8 @@ export {
   getCSHHistory,
   getPendingCSH,
   approvedenyCSH,
+  fetchSetting,
+  ranking,
+  trranking,
+  settingSync,
 };

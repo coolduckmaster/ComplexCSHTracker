@@ -1,10 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable no-unused-vars */
 import React from "react";
-import Home from "./Home";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAutoDarkDetect() {
   const [darkMode, setDarkMode] = React.useState(() => {
     if (typeof window !== "undefined") {
@@ -98,7 +95,7 @@ const WelcomeBackExtra = () => {
   return null;
 };
 
- // deadline actually moved to oct 31 wth.
+// deadline actually moved to oct 31 wth.
 
 const ZaHourRangePick = ({
   showMore,
@@ -122,7 +119,7 @@ const ZaHourRangePick = ({
 
   return (
     <div className="absolute right-0 top-10 z-50 p-4 bg-white dark:bg-[#161a22] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-3 min-w-65">
-      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
+      <div className="flex items-center justify-between">
         <span className="font-semibold text-xs text-gray-700 dark:text-gray-200">
           Hours Range
         </span>
@@ -131,7 +128,7 @@ const ZaHourRangePick = ({
         </span>
       </div>
 
-      <div className="relative w-full h-2 rounded bg-gray-200 dark:bg-gray-700 my-2">
+      <div className="relative w-full h-2 rounded bg-gray-200 dark:bg-gray-700 mt-1 mb-2">
         <div
           className="absolute h-full bg-blue-500 rounded"
           style={{ left: `${minPos}%`, width: `${maxPos - minPos}%` }}
@@ -203,6 +200,9 @@ const ZaHourRangePick = ({
 };
 
 const exportToPdf = async (data) => {
+  const { jsPDF } = await import("jspdf");
+  const { default: autoTable } = await import("jspdf-autotable");
+
   const loadMyImagepls = (image) =>
     new Promise((resolve, reject) => {
       const img = new Image();
@@ -324,5 +324,10 @@ const ProgressBar = ({ current, yeargoal }) => {
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export { WelcomeBackExtra, ZaHourRangePick, exportToPdf, CircularProgress, ProgressBar };
+export {
+  WelcomeBackExtra,
+  ZaHourRangePick,
+  exportToPdf,
+  CircularProgress,
+  ProgressBar,
+};

@@ -1,21 +1,9 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 import { toast } from "react-toastify";
-import axios from "axios";
-import { backendUrl, Placeholder } from "./App";
+import { staffApi } from "./api";
+import { Placeholder } from "./App";
 import { X, Paperclip, Check } from "lucide-react";
-
-const api = axios.create();
-
-api.interceptors.request.use((config) => {
-  config.baseURL = backendUrl + "/api/user/csh/";
-  const token =
-    localStorage.getItem("adtoken") || localStorage.getItem("trtoken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const handleVouchArray = (vouchZeInput) => {
   if (!vouchZeInput) return [];
@@ -71,14 +59,22 @@ const CSHPanelSelectComp = ({
 }) => {
   const [showExtra, setShowExtra] = React.useState(false);
   const CurWordCount = trnote.trim() ? trnote.trim().split(/\s+/).length : 0;
+  const unsavedNoteInform =
+    trnote.trim() !== (selectedRequest?.trnote || "").trim();
 
   const handleProcess = async (status) => {
     if (!selectedRequest) return;
+    if (unsavedNoteInform) {
+      const confirmProceed = window.confirm(
+        "You have unsaved changes in the teacher's note. Do you want to proceed without saving?"
+      ); //unpolished confirmproceed for now to get shipped 
+      if (!confirmProceed) return;
+    }
     const { userId, requestId } = selectedRequest;
     setProcessingId(requestId);
 
     try {
-      const { data: HPdata } = await api.post("approval", {
+      const { data: HPdata } = await staffApi.post("csh/approval", {
         userId,
         requestId,
         status,
@@ -119,7 +115,7 @@ const CSHPanelSelectComp = ({
 
     if (CurWordCount <= 250) {
       try {
-        const saveNote = await api.post("approval", {
+        const saveNote = await staffApi.post("csh/approval", {
           userId,
           requestId,
           trnote,
@@ -184,7 +180,7 @@ const CSHPanelSelectComp = ({
                 <p className="flex justify-between font-semibold text-gray-900 dark:text-white">
                   <span className="flex gap-1 items-center">
                     <span>{selectedRequest.userName}</span>
-                    <span className="text-md font-monotext-gray-600 dark:text-gray-300">
+                    <span className="text-md font-mono text-gray-600 dark:text-gray-300">
                       ({selectedRequest.schoolId})
                     </span>
                   </span>
@@ -401,7 +397,7 @@ const CSHPanelComp = ({
   React.useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const { data: FRdata } = await api.get("fetchpendingreq");
+        const { data: FRdata } = await staffApi.get("csh/fetchpendingreq");
         if (FRdata?.success && Array.isArray(FRdata.data)) {
           setRequests(FRdata.data);
         } else {
@@ -412,11 +408,10 @@ const CSHPanelComp = ({
         }
       } catch (error) {
         console.log(error);
-      } 
+      }
     };
     fetchRequests();
   }, [setRequests]);
-
 
   return searchRequest.length === 0 ? (
     <div className="p-8 text-center text-gray-400 text-sm">

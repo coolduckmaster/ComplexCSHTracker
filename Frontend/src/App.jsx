@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable no-unused-vars */
 import React from "react";
 import Login from "./Login";
 import Home from "./Home";
@@ -8,6 +8,8 @@ import CSHPanel from "./CSHPanel";
 import Notfound from "./404";
 import DashboardSide from "./DashboardSide";
 import CSHHistory from "./CSHHistory";
+import TrReport from "./TrReport";
+import LeaderBoard from "./LeaderBoard"
 import { useAutoDarkDetect } from "./misc";
 import { ToastContainer } from "react-toastify";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -20,121 +22,57 @@ import {
   Outlet,
 } from "react-router";
 
-export const backendUrl = "http://localhost:4000";
-export const backendUrltest = import.meta.env.VITE_BACKEND_URL || "";
 export const Placeholder =
-  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"; //This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license. Wikimedia. 
-//Forgot to re-add the license for the placeholder image.
+  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"; //This file is licensed under the Creative Commons Attribution-Share Alike 4.0 International license. Wikimedia.
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-const ProtectedLink = () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-  return <Outlet />;
-};
+const hasStaffToken = () =>
+  localStorage.getItem("adtoken") || localStorage.getItem("trtoken");
 
-const VeryProtectedLink = () => {
-  const token = localStorage.getItem("token");
-  const adtoken = localStorage.getItem("adtoken");
-  if (!token) return <Navigate to="/login" replace />;
-  if (!adtoken) return <Navigate to="/" replace />;
-  return <Outlet context={{}} />;
-};
+const ProtectedLink = () =>
+  localStorage.getItem("token") ? <Outlet /> : <Navigate to="/login" replace />;
 
-const StaffProtectedLink = () => {
-  const token = localStorage.getItem("token");
-  const adtoken = localStorage.getItem("adtoken");
-  const trtoken = localStorage.getItem("trtoken");
+const VeryProtectedLink = () =>
+  localStorage.getItem("adtoken") ? <Outlet /> : <Navigate to="/" replace />;
 
-  if (!token) return <Navigate to="/login" replace />;
-  if (!adtoken && !trtoken) return <Navigate to="/" replace />;
-  return <Outlet />;
-};
+const StaffProtectedLink = () =>
+  hasStaffToken() ? <Outlet /> : <Navigate to="/" replace />;
 
-const PublicLink = () => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    return <Navigate to="/" replace />;
-  }
-  return <Outlet />;
-};
+const PublicLink = () =>
+  localStorage.getItem("token") ? <Navigate to="/" replace /> : <Outlet />;
+
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route>
+      <Route element={<PublicLink />}>
+        <Route path="/login" element={<Login />} />
+      </Route>
+
+      <Route element={<ProtectedLink />}>
+        <Route element={<DashboardSide />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/requests" element={<CSHRequest />} />
+          <Route path="/history" element={<CSHHistory />} />
+          <Route path="/leaderboard" element={<LeaderBoard/>}/>
+
+          <Route element={<VeryProtectedLink />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
+
+          <Route element={<StaffProtectedLink />}>
+            <Route path="/approval" element={<CSHPanel />} />
+            {/* <Route path="/report" element={<TrReport />} /> */}
+          </Route>
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Notfound />} />
+    </Route>,
+  ),
+);
 
 const App = () => {
   const isDark = useAutoDarkDetect();
-  const [token, setToken] = React.useState(
-    localStorage.getItem("token") || ""
-  );
-  const [adtoken, setAdToken] = React.useState(
-    localStorage.getItem("adtoken") || ""
-  );
-  const [trtoken, setTrToken] = React.useState(
-    localStorage.getItem("trtoken") || ""
-  );
-
-  React.useEffect(() => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("adtoken", adtoken);
-    localStorage.setItem("trtoken", trtoken);
-
-    if (token === "") localStorage.removeItem("token");
-    if (adtoken === "") localStorage.removeItem("adtoken");
-    if (trtoken === "") localStorage.removeItem("trtoken");
-  }, [token, adtoken, trtoken]);
-
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route>
-        <Route element={<PublicLink />}>
-          <Route
-            path="/login"
-            element={
-              <Login
-                setToken={setToken}
-                setAdToken={setAdToken}
-                setTrToken={setTrToken}
-              />
-            }
-          />
-        </Route>
-
-        <Route element={<ProtectedLink />}>
-          <Route element={<DashboardSide />}>
-            <Route path="/" element={<Home setToken={setToken} />} />
-            <Route
-              path="/requests"
-              element={<CSHRequest setToken={setToken} />}
-            />
-            <Route
-              path="/history"
-              element={<CSHHistory setToken={setToken} />}
-            />
-
-            <Route element={<VeryProtectedLink />}>
-              <Route
-                path="/admin"
-                element={
-                  <Admin setToken={setToken} setAdToken={setAdToken} />
-                }
-              />
-            </Route>
-
-            <Route element={<StaffProtectedLink />}>
-              <Route
-                path="/approval"
-                element={
-                  <CSHPanel setToken={setToken} setTrToken={setTrToken} />
-                }
-              />
-            </Route>
-          </Route>
-        </Route>
-
-        <Route path="*" element={<Notfound />} />
-      </Route>
-    )
-  );
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -145,5 +83,5 @@ const App = () => {
     </GoogleOAuthProvider>
   );
 };
-
+//router revamp with help from my mate K.V.
 export default App;

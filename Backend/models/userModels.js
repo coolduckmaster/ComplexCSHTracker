@@ -61,6 +61,10 @@ const extraSchema = new mongoose.Schema({
     default: "Student",
   },
 
+  ownedClass: {
+    type: String,
+  },
+
   ApprovedRequest: {
     type: Number,
     default: 0,

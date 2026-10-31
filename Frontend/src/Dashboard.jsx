@@ -1,8 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import axios from "axios";
 import CSHHistoryComp from "./CSHHistoryComp";
-import { CircularProgress, ProgressBar } from "./misc.jsx"
+import { CircularProgress, ProgressBar } from "./misc.jsx";
 import { useNavigate } from "react-router";
 import {
   Clock,
@@ -10,18 +9,9 @@ import {
   ClipboardClock,
   CalendarDays,
 } from "lucide-react";
-import { backendUrl } from "./App";
+import { api } from "./api";
 import { toast } from "react-toastify";
 import DashboardTR from "./DashboardTR";
-
-axios.interceptors.request.use((config) => {
-  config.baseURL = backendUrl + "/api/user/";
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const Dashboard = () => {
   const [search, setSearch] = React.useState("");
@@ -29,6 +19,7 @@ const Dashboard = () => {
   const [selectedRequest, setSelectedRequest] = React.useState(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [filter, setFilter] = React.useState("All");
+  const [yearlygoal, setYearlyGoal] = React.useState(0);
 
   const today = new Date();
   const day = today.toDateString();
@@ -43,7 +34,7 @@ const Dashboard = () => {
     ApprovedRequest: 0,
     PendingRequest: 0,
   });
-  const [isRole, setIsRole] = React.useState("Student");
+  const [isRole, setIsRole] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
   const totalRequest = requestData.ApprovedRequest + requestData.PendingRequest;
 
@@ -72,17 +63,10 @@ const Dashboard = () => {
 
   React.useEffect(() => {
     const fetchStuff = async () => {
-      const userId = localStorage.getItem("userId");
-      if (!userId) return;
-
       try {
         const [response, responserequest] = await Promise.all([
-          axios.post("csh/check", {
-            userId,
-          }),
-          axios.post("csh/requestcheck", {
-            userId,
-          }),
+          api.post("csh/check"),
+          api.post("csh/requestcheck"),
         ]);
 
         if (response.data.success) {
@@ -121,11 +105,28 @@ const Dashboard = () => {
         setIsRole("Admin");
       } else if (trtoken) {
         setIsRole("Teacher");
+      } else {
+        setIsRole("Student");
       }
     }
 
     assumeRole();
-  }, []);
+    if (isRole === "Student") {
+      const decideYearlyGoal = () => {
+        const grade =
+          localStorage.getItem("userGrade").replace("Grade ", "") || "None";
+        if (grade === "None") {
+          toast.error("No grade! Your yearly goal can't be decided!");
+        }
+        const gradenumb = parseInt(grade, 10);
+        if (gradenumb >= 9) {
+          const calculatedGoal = 15 + (gradenumb - 9) * 15;
+          setYearlyGoal(calculatedGoal);
+        }
+      };
+      decideYearlyGoal();
+    }
+  }, [isRole]);
 
   if (isLoading) {
     return (
@@ -239,7 +240,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mt-4">
             <div className="lg:col-span-1 min-w-0 p-4 bg-gray-100 rounded-xl shadow-sm dark:bg-[#161a22] dark:text-white border border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800">
               <div className="flex justify-between pb-4">
                 <p className="flex flex-col py-4 justify-between font-mono text-gray-500 dark:text-gray-400">
@@ -257,14 +258,17 @@ const Dashboard = () => {
                 </p>
 
                 <CircularProgress current={cshData.ApprovedHours} total={60} />
-               </div>
+              </div>
 
               <div className="pt-3">
                 <p className="pb-2 font-medium text-sm text-gray-600 dark:text-gray-300">
                   Yearly progress
                 </p>
 
-                <ProgressBar current={cshData.ApprovedHours} yeargoal={15} />
+                <ProgressBar
+                  current={cshData.ApprovedHours}
+                  yeargoal={yearlygoal}
+                />
               </div>
             </div>
 
@@ -286,7 +290,7 @@ const Dashboard = () => {
           </div>
         </div>
       ) : (
-        <DashboardTR/>
+        <DashboardTR />
       )}
     </div>
   );

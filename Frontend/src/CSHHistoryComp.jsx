@@ -1,19 +1,7 @@
 import React from "react";
-import axios from "axios";
-
+import { api } from "./api"
 import { toast } from "react-toastify";
-import { backendUrl } from "./App";
 
-axios.interceptors.request.use((config) => {
-  config.baseURL = `${backendUrl}/api/user/`;
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
 
 const CSHHistoryComp = ({
   searchLog,
@@ -26,10 +14,7 @@ const CSHHistoryComp = ({
   React.useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        const { data } = await axios.post("/csh/fetchuserreq", {
-          userId,
-        });
+        const { data } = await api.post("csh/fetchuserreq");
         if (data?.success && Array.isArray(data.data)) {
           setRequests(data.data);
         } else {

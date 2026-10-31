@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from "react";
 import { WelcomeBackExtra } from "./misc";
 import { Placeholder } from "./App";
@@ -11,13 +12,18 @@ import {
   ClipboardClock,
   LogOutIcon,
   ShieldCog,
+  ChartColumn,
+  Settings,
+  Podium,
 } from "lucide-react";
+import Setting from "./Setting";
 
 const DashboardSide = () => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isRole, setIsRole] = React.useState("Student");
   const [isOpen, setOpen] = React.useState(false);
   const [logoutOpen, setlogoutOpen] = React.useState(false);
+  const [showSetting, setShowSetting] = React.useState(false);
   const seenwelcome = sessionStorage.getItem("seenwelcome") || false;
   const storedName = localStorage.getItem("userName") || "User";
   const storedAvt = localStorage.getItem("userAvatar") || Placeholder;
@@ -37,6 +43,8 @@ const DashboardSide = () => {
         setIsRole("Teacher");
       }
     }
+
+    console.log("Mounted SideDash")
 
     assumeRole();
   }, []);
@@ -58,18 +66,19 @@ const DashboardSide = () => {
 
   return (
     <div className="bg-gray-100 dark:bg-black">
-      {(!seenwelcome) && <WelcomeBackExtra />}
+      {!seenwelcome && <WelcomeBackExtra />}
+      {showSetting && <Setting setShowSetting={setShowSetting} />}
       {logoutOpen === false ? null : (
-        <div className="bits-modal-overlay fixed inset-0 z-9999 bg-darker/80 backdrop-blur-md">
-          <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border dark:border-white/10 border-surface-300/70 border-black/20 bg-surface dark:bg-surface outline-none">
+        <div className="bits-modal-overlay fixed inset-0 z-9999 backdrop-blur-md">
+          <div className="bits-modal-content fixed inset-0 z-10000 m-auto h-fit w-[calc(100%-2rem)] max-w-lg overflow-hidden rounded-2xl border dark:border-white/10 border-black/20 outline-none">
             <div className="h-1 w-full bg-red-500 dark:bg-red-500"></div>
             <div className="p-4 sm:p-6">
               <div className="mb-5 flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="text-balance text-base md:text-lg font-semibold tracking-tight text-surface-content dark:text-white ">
+                  <div className="text-balance text-base md:text-lg font-semibold tracking-tight dark:text-white ">
                     Hang on a second!
                   </div>
-                  <div className="mt-1 text-sm leading-snug text-muted sm:text-[15px] dark:text-white/50">
+                  <div className="mt-1 text-sm leading-snug  sm:text-[15px] dark:text-white/50">
                     Are you sure you want to log out?
                   </div>
                 </div>
@@ -117,7 +126,7 @@ const DashboardSide = () => {
               className={`${isOpen ? "bits-modal-content fixed inset-0 z-10000 md:flex md:justify-between" : "hidden md:flex"}  flex h-screen w-55 shrink-0 flex-col justify-between rounded-r-2xl bg-[#e1e4e8] px-3 py-4 text-surface-content shadow-2xl outline-1 outline-black/10 dark:bg-[#161a22] dark:outline-white/14`}
             >
               <div className="space-y-2">
-                <div className="items-center rounded-xl pb-2.5 shadow-[0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="items-center rounded-xl pb-2.5 shadow-[0_1px_0_rgba(0,0,0,0.08)] dark:shadow-[0_1px_0_rgba(255,255,255,0.08)]">
                   <div className="min-h-10 items-center">
                     <div className="flex gap-3 justify-center items-center">
                       <img
@@ -146,38 +155,58 @@ const DashboardSide = () => {
                     <ClipboardEdit className="p-0.5" />
                     Request
                   </NavLink>
+
                   <NavLink to="/history" end className={navLinkClass}>
                     <ClipboardClock className="p-0.5" />
                     History
                   </NavLink>
-                  {isRole === "Admin" && (
+
+                  <NavLink to="/leaderboard" end className={navLinkClass}>
+                    <Podium className="p-0.5" />
+                    Leaderboard
+                  </NavLink>
+
+                  {(isRole === "Teacher" || isRole === "Admin") && (
                     <NavLink to="/approval" className={navLinkClass}>
                       <ClipboardCheck className="p-0.5" />
-                      Approval
+                      Panel
                     </NavLink>
                   )}
+
+                  {/* {(isRole === "Teacher" || isRole === "Admin") && (
+                    <NavLink to="/report" className={navLinkClass}>
+                      <ChartColumn className="p-0.5" />
+                      Assessment
+                    </NavLink>
+                  )} */}
+
                   {isRole === "Admin" && (
                     <NavLink to="/admin" end className={navLinkClass}>
                       <ShieldCog className="p-0.5" />
                       Admin
                     </NavLink>
                   )}
-                  {isRole === "Teacher" && (
-                    <NavLink to="/approval" className={navLinkClass}>
-                      <ClipboardCheck className="p-0.5" />
-                      Approval Panel
-                    </NavLink>
-                  )}
                 </nav>
               </div>
-
-              <button
-                onClick={() => setlogoutOpen(true)}
-                className="flex min-h-10 w-full items-center justify-center gap-3 rounded-lg px-3 py-2 text-sm font-medium outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e1e4e8] dark:focus-visible:ring-offset-[#161a22] text-white bg-red-700 hover:bg-red-800 dark:hover:bg-red-800 transition-colors"
-              >
-                <LogOutIcon className="p-0.5" />
-                Sign Out
-              </button>
+              <div className="grid grid-cols-5">
+                <button
+                  onClick={() => setlogoutOpen(true)}
+                  className= {`flex min-h-10 w-full items-center justify-center gap-3 rounded-lg text-sm font-medium outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#e1e4e8] dark:focus-visible:ring-offset-[#161a22] text-white bg-red-700 hover:bg-red-800 dark:hover:bg-red-800 transition-colors ${
+                    isRole === "Student" ? "lg:col-span-5" : "lg:col-span-4"
+                  }`}
+                >
+                  <LogOutIcon className="p-0.5" />
+                  Sign Out
+                </button>
+                {isRole === "Student" ? null : (
+                  <button
+                    onClick={() => setShowSetting(true)}
+                    className="flex min-h-10 w-full items-center justify-center gap-3 rounded-lg transition-colors"
+                  >
+                    <Settings className="p-0.5" />
+                  </button>
+                )}
+              </div>
             </aside>
           </div>
 

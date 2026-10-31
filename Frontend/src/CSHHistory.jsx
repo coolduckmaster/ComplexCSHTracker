@@ -166,7 +166,7 @@ const CSHHistory = () => {
 
           <button
             type="button"
-            onClick={() => exportToPdf(requests)} //doesnt work??? wth? perhaps a bug with vscode intergrated browser. pls check tmr 
+            onClick={() => exportToPdf(requests)} //fixed it with tr. hamza help :) 
             className="flex items-center text-sm font-medium rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800/60 border border-gray-300 dark:border-gray-700/60 hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200 transition-colors"
           >
             Export

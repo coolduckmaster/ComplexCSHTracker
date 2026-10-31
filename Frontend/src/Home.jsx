@@ -1,10 +1,9 @@
 import React from "react";
-import axios from "axios";
+import { api } from "./api";
 import Onboarding from "./Onboarding";
-import { backendUrl } from "./App";
 import Dashboard from "./Dashboard";
 
-const Home = ({ setToken }) => {
+const Home = () => {
   const [isFaded, setIsFaded] = React.useState(false);
   const [isFadingOut, setIsFadingOut] = React.useState(false);
   const [showNext, setShowNext] = React.useState(
@@ -20,7 +19,6 @@ const Home = ({ setToken }) => {
   const storedName = localStorage.getItem("userName") || "User";
 
   React.useEffect(() => {
-    const userId = localStorage.getItem("userId");
     const localstatus = localStorage.getItem("CompleteOnboard");
 
     if (localstatus === "true") {
@@ -29,9 +27,7 @@ const Home = ({ setToken }) => {
 
     const checkonboard = async () => {
       try {
-        const response = await axios.post(backendUrl + "/api/user/onboarding", {
-          userId,
-        });
+        const response = await api.post("onboarding", {});
         if (
           response.data.completeOnboard === "true" ||
           response.data.message === "User has already completed."
@@ -53,7 +49,7 @@ const Home = ({ setToken }) => {
   if (isLoading) {
     return (
       <div className="flex justify-center font-mono items-center min-h-screen bg-gray-100 dark:bg-black dark:text-white">
-        <p>Loading infomation...</p>
+        <p>Loading information...</p>
       </div>
     );
   }
@@ -78,22 +74,7 @@ const Home = ({ setToken }) => {
   };
 
   if (completeOnboard === true) {
-    // if (!showNext) {
-    //   return (
-    //     <div className="bg-white dark:bg-black">
-    //       <div
-    //         onClick={handleClick}
-    //         className={`fixed inset-0 z-50 flex justify-center items-center bg-gray-100 dark:bg-black dark:text-white cursor-pointer select-none transition-opacity duration-1000 ease-in-out ${
-    //           isFaded ? "opacity-0 pointer-events-none" : "opacity-100"
-    //         }`}
-    //       >
-    //         <p className="font-mono text-3xl"> Welcome back {storedName} </p>
-    //       </div>
-    //     </div>
-    //   );
-    // }
-
-    return <Dashboard setToken={setToken} />;
+    return <Dashboard />;
   }
 
   return (

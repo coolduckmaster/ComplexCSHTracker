@@ -1,19 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import axios from "axios";
 import { CSHPanelComp } from "./CSHPanelComp";
 import { useNavigate } from "react-router";
 import { CircularProgress } from "./misc";
-import { backendUrl } from "./App";
-
-axios.interceptors.request.use((config) => {
-  config.baseURL = backendUrl + "/api/user/";
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import { staffApi } from "./api";
+import { toast } from "react-toastify";
+import LowestStudents from "./TrReport";
 
 const DashboardTR = () => {
   const [hiddenOW, setHiddenOW] = React.useState(true);
@@ -25,6 +17,10 @@ const DashboardTR = () => {
   const [filterGrade, setFilterGrade] = React.useState("All");
   const [search, setSearch] = React.useState("");
   const [requests, setRequests] = React.useState([]);
+  const [classgoal, setClassGoal] = React.useState(0);
+  const [students, setStudents] = React.useState(1);
+
+  const grade = localStorage.getItem("ownedClass");
 
   const sendto = useNavigate();
 
@@ -58,21 +54,52 @@ const DashboardTR = () => {
   );
 
   React.useEffect(() => {
-    const fetchClassCSH = async () => {
-      const grade = "Grade 11";
+    const checkSettings = async () => {
       try {
-        const response = await axios.post("csh/checkclass", {
-          grade,
-        });
+        const response = await staffApi.post("setting");
         if (response.data.success) {
-          setClassCSH(response.data.data.totalApproved);
+          localStorage.setItem("ownedClass", response.data.data.ownedClass);
         }
       } catch (error) {
         console.log(error);
       }
     };
-    fetchClassCSH()
-  }, []);
+
+    const fetchClassCSH = async () => {
+      if (grade === "None") {
+        return toast.error("No class selected as owned, edit in settings!");
+      }
+
+      try {
+        const response = await staffApi.post("csh/checkclass", {
+          grade,
+        });
+        if (response.data.success) {
+          setClassCSH(response.data.data.totalApprovedHours);
+          setStudents(response.data.data.studentCount);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (!grade) {
+      checkSettings();
+    }
+
+    fetchClassCSH();
+
+    const decidedClassGoal = () => {
+      const studentnumb = parseInt(students, 10);
+      if (studentnumb >= 1) {
+        const calculatedgoal = studentnumb * 60;
+        setClassGoal(calculatedgoal);
+      } else {
+        toast.error("No students in your filtered grade!");
+      }
+    };
+    decidedClassGoal();
+  }, [grade, students]);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -81,15 +108,17 @@ const DashboardTR = () => {
           <p className="flex flex-col py-4 justify-between font-mono text-gray-500 dark:text-gray-400">
             <span> Class Goal</span>
             <span className="font-semibold text-5xl text-gray-900 dark:text-white">
-              1200
+              {classgoal}
               <span className="text-xl pl-2">hours</span>
             </span>
             <span className="flex flex-col text-xs text-gray-500 dark:text-gray-400 mt-2">
-              <span>Track your class progress toward</span>
-              <span>their long term CSH goal</span>
+              Track your class progress toward their long term CSH goal
             </span>
           </p>
-          <CircularProgress current={classCSH} total={1200} />
+          <CircularProgress current={classCSH} total={classgoal} />
+        </div>
+        <div className="mt-2">
+          <LowestStudents grade={grade} />
         </div>
       </div>
       <div
@@ -100,7 +129,7 @@ const DashboardTR = () => {
       >
         <div className="w-full p-4 bg-gray-100 dark:bg-[#161a22] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm text-gray-900 dark:text-white">
           <p className="text-lg font-semibold text-gray-900 dark:text-white">
-            Recent Requests
+            Recent Requests ({searchRequest.length || 0})
           </p>
           <div className="grid grid-cols-5 gap-4 px-3.5 pb-3 border-b border-gray-200 dark:border-gray-800 font-mono text-xs text-gray-500 dark:text-gray-400">
             <span>Student</span>

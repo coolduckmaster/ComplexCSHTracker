@@ -1,7 +1,5 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
-import { backendUrl } from "./App";
-import axios from "axios";
 import { toast } from "react-toastify";
 import {
   ChevronLeft,
@@ -11,18 +9,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { CSHPanelComp, CSHPanelSelectComp } from "./CSHPanelComp";
-
-const api = axios.create();
-
-api.interceptors.request.use((config) => {
-  config.baseURL = backendUrl + "/api/user/csh/";
-  const token =
-    localStorage.getItem("adtoken") || localStorage.getItem("trtoken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const CSHPanel = () => {
   const [hiddenOW, setHiddenOW] = React.useState(true);
@@ -130,7 +116,7 @@ const CSHPanel = () => {
                   {showFilter && !selectedRequest && (
                     <div className="absolute right-0 top-10 z-50 p-4 bg-white dark:bg-[#161a22] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-1 min-w-65 text-xs">
                       <span className="font-semibold text-gray-700 dark:text-gray-200 pb-2 border-b border-gray-100 dark:border-gray-700">
-                        More filter
+                        More filters
                       </span>
                       <div className="grid grid-cols-1 gap-1 items-center justify-between pb-2">
                         <span className="text-gray-500 dark:text-gray-400">
@@ -151,7 +137,7 @@ const CSHPanel = () => {
                         <select
                           value={filterGrade}
                           onChange={(e) => setFilterGrade(e.target.value)}
-                          className="w-auto px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-whtite dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                          className="w-auto px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                         >
                           <option value="All">All Grade</option>
                           <option value="Grade 12">Grade 12</option>
@@ -168,7 +154,7 @@ const CSHPanel = () => {
                           }}
                           className="text-red-500 hover:underline text-right"
                         >
-                          Reset More Filter
+                          Reset More Filters
                         </button>
                       )}
                     </div>

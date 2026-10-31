@@ -1,14 +1,13 @@
 import React from "react";
-import { backendUrl } from "./App";
-import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { api } from "./api";
+import { toast } from "react-toastify";
 
 const Onboarding = ({ SetOnboard }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [grade, setGrade] = React.useState("");
   const [campus, setCampus] = React.useState("");
   const [NCschoolId, SetSchoolId] = React.useState("");
+  const [iamsubmit, setIamsubmit] = React.useState(false);
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -18,19 +17,20 @@ const Onboarding = ({ SetOnboard }) => {
 
   const formHandler = async (event) => {
     event.preventDefault();
+    if (iamsubmit) return;
+    setIamsubmit(true);
     try {
-      const userId = localStorage.getItem("userId");
-      const schoolId = NCschoolId.toUpperCase();
-      const response = await axios.post(backendUrl + "/api/user/onboarding", {
-        userId,
+      const schoolId = NCschoolId.toUpperCase().trim();
+      const response = await api.post("onboarding", {
         grade,
         campus,
         schoolId,
       });
 
       if (response.data.success) {
-        toast.success("Infomation has been saved successfully!");
+        toast.success("Information has been saved successfully!");
         SetOnboard(true);
+        localStorage.setItem("userGrade", grade);
         localStorage.setItem("CompleteOnboard", true);
       } else {
         toast.error(response.data.message);
@@ -38,6 +38,8 @@ const Onboarding = ({ SetOnboard }) => {
     } catch (error) {
       console.error("Error to save!", error);
       toast.error(error.message);
+    } finally {
+      setIamsubmit(false);
     }
   };
 
@@ -45,10 +47,9 @@ const Onboarding = ({ SetOnboard }) => {
     <div
       className={` fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-gray-100 dark:bg-black dark:text-white transition-opacity duration-1000 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
     >
-      <ToastContainer theme="dark" />
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="item-center justify-center text-2xl">
-          Let's add some infomation to your account.
+          Let's add some information to your account.
         </p>
         <form
           onSubmit={formHandler}
@@ -67,9 +68,12 @@ const Onboarding = ({ SetOnboard }) => {
               <select
                 value={campus}
                 onChange={(e) => setCampus(e.target.value)}
+                required
                 className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
               >
-                <option hidden>Campus:</option>
+                <option value="" hidden disabled>
+                  Campus:
+                </option>
                 <option value="Campus A">Campus A</option>
                 <option value="Campus B">Campus B</option>
                 <option value="N/A Campus">N/A</option>
@@ -78,9 +82,12 @@ const Onboarding = ({ SetOnboard }) => {
               <select
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-md dark:text-white dark:bg-mist-950 dark:border-white not-dark:focus:outline-none not-dark:focus:ring-2 not-dark:focus:ring-blue-500"
               >
-                <option hidden>Grade:</option>
+                <option value="" hidden disabled>
+                  Grade:
+                </option>
                 <option value="Grade 9">Grade 9</option>
                 <option value="Grade 10">Grade 10</option>
                 <option value="Grade 11">Grade 11</option>
@@ -89,7 +96,10 @@ const Onboarding = ({ SetOnboard }) => {
               </select>
             </div>
 
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300">
+            <button
+              disabled={iamsubmit}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Submit
             </button>
           </div>

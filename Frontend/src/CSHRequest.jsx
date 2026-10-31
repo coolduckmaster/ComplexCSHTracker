@@ -1,6 +1,5 @@
 import React from "react";
-import { backendUrl } from "./App";
-import axios from "axios";
+import { api } from "./api";
 import { toast } from "react-toastify";
 import { CSHRequestGDPick, CSHRequestGDList } from "./CSHRequestGD";
 import {
@@ -13,15 +12,6 @@ import {
   PencilIcon,
   CalendarDays,
 } from "lucide-react";
-
-axios.interceptors.request.use((config) => {
-  config.baseURL = backendUrl + "/api/user/";
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 const CSHRequest = () => {
   const [inputCD, setInputCD] = React.useState(false);
@@ -40,7 +30,7 @@ const CSHRequest = () => {
         );
 
         if (!verified) {
-          const response = await axios.post("authcheck");
+          const response = await api.post("authcheck");
 
           if (response.data.success) {
             sessionStorage.setItem("xq1hBo4x4a9xxa6Op3TQtqw3CoCZXaVO", true);
@@ -100,15 +90,10 @@ const CSHRequest = () => {
     if (!inputCD) {
       if (CurWordCount <= 100) {
         try {
-          const userId = localStorage.getItem("userId");
-          const vouchData = vouch.map((file) => file.url).join(", ");
-
-          const response = await axios.post("csh/register", {
-            userId,
+          const response = await api.post("csh/register", {
             activityName,
             requestHours,
             dateofActivity: doa,
-            vouchData,
             vouch,
             description: des,
           });
@@ -122,8 +107,7 @@ const CSHRequest = () => {
           }
         } catch (error) {
           toast.error("An error occurred while submitting the request.");
-          console.log(error);
-          console.log(vouch);
+           console.log(error);
         }
       } else {
         toast.error("Your description is more than 100 words!");
@@ -199,7 +183,7 @@ const CSHRequest = () => {
                   onChange={(e) => setRequestHours(e.target.value)}
                   required
                   type="number"
-                  min="0"
+                  min="1"
                   max="24"
                   placeholder="e.g., 3, 5"
                   className={inputClass} 
@@ -220,6 +204,7 @@ const CSHRequest = () => {
                   value={doa}
                   type={inputType}
                   min="2023-01-01"
+                  max={new Date().toISOString().split("T")[0]}
                   required
                   onFocus={() => setInputType("date")}
                   onBlur={(e) => {
@@ -342,7 +327,7 @@ const CSHRequest = () => {
                 </div>
 
                 <span className="flex flex-col">
-                  Submit accurate infomation.
+                  Submit accurate information.
                   <span className="text-gray-500 dark:text-white/60">
                     Double-check your hours and details.
                   </span>
