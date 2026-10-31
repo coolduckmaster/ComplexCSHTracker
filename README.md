@@ -14,7 +14,9 @@ TLDR: A Tracker that has
 - Approval
 - Hour goals
 - Onboarding (somewhat)
-- Bugs (HAD TO RUSH IT DEAD LINE IS TODAY)
+- Leaderboard
+- Exporting logs
+- Bugs & Others things.
 
 Check it out [here](https://complex-csh-tracker.vercel.app/)
 
@@ -36,4 +38,8 @@ Image gallery:
 <img width="1917" height="906" alt="image" src="https://github.com/user-attachments/assets/0a026c96-5b07-40c4-a909-bc5e2c3cef50" />
 
 <img width="1900" height="912" alt="image" src="https://github.com/user-attachments/assets/f991a93c-3a35-4124-ad75-1efb0f5976d7" />
+
+<img width="1917" height="922" alt="image" src="https://github.com/user-attachments/assets/89f2e0e6-3aff-4a25-8a00-fd2ce66b9994" />
+
+<img width="1917" height="907" alt="image" src="https://github.com/user-attachments/assets/885b08ba-e8e7-454d-9bb3-61cab3152e90" />
 
